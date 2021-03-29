@@ -1,93 +1,114 @@
-{ "frames": {
-   "kidRun 0.aseprite": {
+{ "frames": [
+   {
+    "filename": "anim_dash 0.aseprite",
     "frame": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 1.aseprite": {
+   {
+    "filename": "anim_dash 1.aseprite",
     "frame": { "x": 48, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 2.aseprite": {
+   {
+    "filename": "anim_dash 2.aseprite",
     "frame": { "x": 96, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 3.aseprite": {
+   {
+    "filename": "anim_duck.aseprite",
     "frame": { "x": 144, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 150
    },
-   "kidRun 4.aseprite": {
+   {
+    "filename": "anim_fall 0.aseprite",
     "frame": { "x": 192, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 5.aseprite": {
+   {
+    "filename": "anim_fall 1.aseprite",
     "frame": { "x": 240, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 6.aseprite": {
+   {
+    "filename": "anim_fall_loop.aseprite",
+    "frame": { "x": 288, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   {
+    "filename": "anim_grounded 0.aseprite",
     "frame": { "x": 0, "y": 48, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 7.aseprite": {
+   {
+    "filename": "anim_grounded 1.aseprite",
     "frame": { "x": 48, "y": 48, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 8.aseprite": {
+   {
+    "filename": "anim_grounded 2.aseprite",
     "frame": { "x": 96, "y": 48, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
+    "duration": 100
    },
-   "kidRun 9.aseprite": {
+   {
+    "filename": "anim_idle 0.aseprite",
     "frame": { "x": 144, "y": 48, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 75
-   },
-   "kidIdle 0.aseprite": {
-    "frame": { "x": 192, "y": 48, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 800
    },
-   "kidIdle 1.aseprite": {
+   {
+    "filename": "anim_idle 1.aseprite",
+    "frame": { "x": 192, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 50
+   },
+   {
+    "filename": "anim_idle 2.aseprite",
     "frame": { "x": 240, "y": 48, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -95,23 +116,35 @@
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 50
    },
-   "kidIdle 2.aseprite": {
+   {
+    "filename": "anim_idle 3.aseprite",
+    "frame": { "x": 288, "y": 48, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 50
+   },
+   {
+    "filename": "anim_idle_shoot 0.aseprite",
     "frame": { "x": 0, "y": 96, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 50
+    "duration": 100
    },
-   "kidIdle 3.aseprite": {
+   {
+    "filename": "anim_idle_shoot 1.aseprite",
     "frame": { "x": 48, "y": 96, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 50
+    "duration": 100
    },
-   "kidFall 0.aseprite": {
+   {
+    "filename": "anim_jump 0.aseprite",
     "frame": { "x": 96, "y": 96, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -119,7 +152,8 @@
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 100
    },
-   "kidFall 1.aseprite": {
+   {
+    "filename": "anim_jump 1.aseprite",
     "frame": { "x": 144, "y": 96, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -127,7 +161,8 @@
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 100
    },
-   "kidDash 0.aseprite": {
+   {
+    "filename": "anim_jump 2.aseprite",
     "frame": { "x": 192, "y": 96, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -135,7 +170,8 @@
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 100
    },
-   "kidDash 1.aseprite": {
+   {
+    "filename": "anim_jump_loop.aseprite",
     "frame": { "x": 240, "y": 96, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -143,117 +179,202 @@
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 100
    },
-   "kidDash 2.aseprite": {
+   {
+    "filename": "anim_run 0.aseprite",
+    "frame": { "x": 288, "y": 96, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run 1.aseprite",
     "frame": { "x": 0, "y": 144, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidFallLoop 0.aseprite": {
+   {
+    "filename": "anim_run 2.aseprite",
     "frame": { "x": 48, "y": 144, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidFallLoop 1.aseprite": {
-    "frame": { "x": 48, "y": 144, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
-   },
-   "kidGrounded 0.aseprite": {
+   {
+    "filename": "anim_run 3.aseprite",
     "frame": { "x": 96, "y": 144, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidGrounded 1.aseprite": {
+   {
+    "filename": "anim_run 4.aseprite",
     "frame": { "x": 144, "y": 144, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidGrounded 2.aseprite": {
+   {
+    "filename": "anim_run 5.aseprite",
     "frame": { "x": 192, "y": 144, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidJump 0.aseprite": {
+   {
+    "filename": "anim_run 6.aseprite",
     "frame": { "x": 240, "y": 144, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidJump 1.aseprite": {
+   {
+    "filename": "anim_run 7.aseprite",
+    "frame": { "x": 288, "y": 144, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run 8.aseprite",
     "frame": { "x": 0, "y": 192, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidJump 2.aseprite": {
+   {
+    "filename": "anim_run 9.aseprite",
     "frame": { "x": 48, "y": 192, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidJumpLoop 0.aseprite": {
+   {
+    "filename": "anim_run_shoot 0.aseprite",
     "frame": { "x": 96, "y": 192, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidJumpLoop 1.aseprite": {
-    "frame": { "x": 96, "y": 192, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
-   },
-   "kidWallSlide 0.aseprite": {
+   {
+    "filename": "anim_run_shoot 1.aseprite",
     "frame": { "x": 144, "y": 192, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 75
    },
-   "kidWallSlide 1.aseprite": {
-    "frame": { "x": 144, "y": 192, "w": 48, "h": 48 },
+   {
+    "filename": "anim_run_shoot 2.aseprite",
+    "frame": { "x": 192, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 3.aseprite",
+    "frame": { "x": 240, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 4.aseprite",
+    "frame": { "x": 288, "y": 192, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 5.aseprite",
+    "frame": { "x": 0, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 6.aseprite",
+    "frame": { "x": 48, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 7.aseprite",
+    "frame": { "x": 96, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 8.aseprite",
+    "frame": { "x": 144, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_run_shoot 9.aseprite",
+    "frame": { "x": 192, "y": 240, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 75
+   },
+   {
+    "filename": "anim_wall_slide.aseprite",
+    "frame": { "x": 240, "y": 240, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
     "duration": 100
    }
- },
+ ],
  "meta": {
   "app": "http://www.aseprite.org/",
   "version": "1.2.25-x64",
-  "image": "atlas-player.png",
+  "image": "atlas.png",
   "format": "RGBA8888",
-  "size": { "w": 288, "h": 240 },
+  "size": { "w": 336, "h": 288 },
   "scale": "1"
  }
 }

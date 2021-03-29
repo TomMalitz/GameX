@@ -16,12 +16,8 @@ namespace GameX.Entities
     class Player : Entity
     {
 
-        //Sprite Data
-        private string _atlasPath = "Assets/Player/atlas-player.png";
-        private Vector2 _atlasCellDimensions = new Vector2(48, 48);
-
         // Params
-        public float MoveSpeed = 200f;
+        public float MoveSpeed = 150f;
         public float DashSpeed = 350f;
         public float WallSlideSpeed = 100f;
         public float MaxGroundDashTime = 0.25f;
@@ -62,23 +58,6 @@ namespace GameX.Entities
         VirtualButton _attackInput;
         VirtualButton _weaponChangeInput;
 
-        /*TODO
-         - double jump
-         - dash?
-         - wall ride?
-         - ground slide like mega man x?
-
-         Animations
-         - run
-         - jump 
-         - fall
-         - duck
-         - mid, duck/down, up attacks for idle and jumping
-         - special attack (holy attack)
-         - dash/slide
-         - wall slide
-        */
-
         public Player(TmxMap sceneTileMap)
         {
             _sceneTileMap = sceneTileMap;
@@ -115,19 +94,13 @@ namespace GameX.Entities
 
         private void ConfigureAnimations()
         {
+            Dictionary<string, int> fpsData = new Dictionary<string, int>();
+            fpsData.Add("idle", 8);
+            fpsData.Add("run", 14);
 
-            var atlas = Scene.Content.LoadTexture(_atlasPath);
-            var sprites = Sprite.SpritesFromAtlas(atlas, (int)_atlasCellDimensions.X, (int)_atlasCellDimensions.Y);
+            _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, "Assets/Player/atlas", fpsData);
+            this.AddComponent<SpriteAnimator>(_animator);
 
-            _animator = this.AddComponent<SpriteAnimator>();
-
-            Sprite[] runSprites = SpriteUtil.GetSpritesForRange(sprites, 0, 10);
-            Sprite[] idleSprites = SpriteUtil.GetSpritesForRange(sprites, 10, 4);
-
-            _animator.AddAnimation("idle", new SpriteAnimation(idleSprites, 8));
-            _animator.AddAnimation("run", new SpriteAnimation(runSprites, 14));
-
-            // Start with idle animation
             _animator.Play("idle");
         }
 

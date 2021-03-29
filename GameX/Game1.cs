@@ -22,7 +22,8 @@ namespace GameX
             base.Initialize();
 
             Scene testScene = Scene.CreateWithDefaultRenderer(Color.CornflowerBlue);
-            testScene.SetDesignResolution(512, 288, Scene.SceneResolutionPolicy.BestFit);
+            testScene.SetDesignResolution(512, 288, Scene.SceneResolutionPolicy.NoBorder);
+            //testScene.SetDesignResolution(1280, 720, Scene.SceneResolutionPolicy.NoBorderPixelPerfect);
 
             TmxMap testLevel = testScene.Content.LoadTiledMap("Assets/Levels/Test/test.tmx");
             Entity tiledEntity = testScene.CreateEntity("tiled-level");
@@ -35,7 +36,12 @@ namespace GameX
             Scene = testScene;
 
             Window.Title = "Game X";
-            Screen.SetSize(1280, 720);
+            Screen.SetSize(2560, 1440);
+
+            //IsFixedTimeStep = true;
+
+            //Core.DefaultSamplerState = SamplerState.PointWrap;
+            //Core.DebugRenderEnabled = true;
 
         }
     }
