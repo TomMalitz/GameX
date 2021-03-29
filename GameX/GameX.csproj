@@ -31,12 +31,15 @@
     <ProjectReference Include="..\Nez\Nez.Portable\Nez.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Assets\Levels\" />
-    <Folder Include="Assets\Menus\" />
-    <Folder Include="Assets\Enemies\" />
-    <Folder Include="Assets\Bosses\" />
-    <Folder Include="Assets\UI\" />
-    <Folder Include="Assets\Player\" />
-    <Folder Include="Scenes\" />
+    <!-- <Folder Include="Assets\*" /> -->
+    <None Include="Assets\**\*.tmx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\**\*.tsx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\**\*.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

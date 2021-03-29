@@ -15,8 +15,12 @@ namespace GameX.Entities
 {
     class Player : Entity
     {
+
+        //Sprite Data
+        private string _atlasPath = "Assets/Player/atlas-player.png";
+        private Vector2 _atlasCellDimensions = new Vector2(48, 48);
+
         // Params
-        public string AtlasPath = "Assets/Player/PNG/Atlas";
         public float MoveSpeed = 200f;
         public float DashSpeed = 350f;
         public float WallSlideSpeed = 100f;
@@ -55,6 +59,8 @@ namespace GameX.Entities
         // Input Buttons
         VirtualButton _jumpInput;
         VirtualButton _dashInput;
+        VirtualButton _attackInput;
+        VirtualButton _weaponChangeInput;
 
         /*TODO
          - double jump
@@ -73,8 +79,6 @@ namespace GameX.Entities
          - wall slide
         */
 
-
-
         public Player(TmxMap sceneTileMap)
         {
             _sceneTileMap = sceneTileMap;
@@ -90,7 +94,7 @@ namespace GameX.Entities
             _camera.Entity.UpdateOrder = int.MaxValue;
 
             // Setup components and inputs
-            _mover = this.AddComponent(new TiledMapMover(_sceneTileMap.GetLayer<TmxLayer>("Main")));
+            _mover = this.AddComponent(new TiledMapMover(_sceneTileMap.GetLayer<TmxLayer>("main")));
             SetCollider();
             ConfigureAnimations();
             SetupInput();
@@ -104,7 +108,7 @@ namespace GameX.Entities
             int width = 24;
             int height = 42;
             int widthOffset = 1;
-            int heightOffset = 4;
+            int heightOffset = 2;
 
             _collider = this.AddComponent(new BoxCollider(-width / 2 + widthOffset, -height / 2 + heightOffset, width, height));
         }
@@ -112,13 +116,13 @@ namespace GameX.Entities
         private void ConfigureAnimations()
         {
 
-            var atlas = Scene.Content.LoadTexture(AtlasPath + ".png");
-            var sprites = Sprite.SpritesFromAtlas(atlas, 50, 50);
+            var atlas = Scene.Content.LoadTexture(_atlasPath);
+            var sprites = Sprite.SpritesFromAtlas(atlas, (int)_atlasCellDimensions.X, (int)_atlasCellDimensions.Y);
 
             _animator = this.AddComponent<SpriteAnimator>();
 
-            Sprite[] idleSprites = SpriteUtil.GetSpritesForRange(sprites, 0, 5);
-            Sprite[] runSprites = SpriteUtil.GetSpritesForRange(sprites, 5, 4);
+            Sprite[] runSprites = SpriteUtil.GetSpritesForRange(sprites, 0, 10);
+            Sprite[] idleSprites = SpriteUtil.GetSpritesForRange(sprites, 10, 4);
 
             _animator.AddAnimation("idle", new SpriteAnimation(idleSprites, 8));
             _animator.AddAnimation("run", new SpriteAnimation(runSprites, 14));
@@ -149,6 +153,14 @@ namespace GameX.Entities
             _dashInput = new VirtualButton();
             _dashInput.Nodes.Add(new VirtualButton.GamePadButton(0, Buttons.B));
             _dashInput.Nodes.Add(new VirtualButton.KeyboardKey(Keys.LeftShift));
+
+            _attackInput = new VirtualButton();
+            _attackInput.Nodes.Add(new VirtualButton.GamePadButton(0, Buttons.X));
+            _attackInput.Nodes.Add(new VirtualButton.KeyboardKey(Keys.F));
+
+            _weaponChangeInput = new VirtualButton();
+            _weaponChangeInput.Nodes.Add(new VirtualButton.GamePadButton(0, Buttons.Y));
+            _weaponChangeInput.Nodes.Add(new VirtualButton.KeyboardKey(Keys.E));
         }
 
         public override void Update()
@@ -192,7 +204,7 @@ namespace GameX.Entities
                 _velocity.Y = 0;
             }
 
-            // end ground dash when grounded
+            // end ground dash when grounded or ground dash time has expired
             if (_collisionState.Below && (!_dashInput.IsDown || _groundDashTime >= MaxGroundDashTime))
             {
                 _groundDashing = false;

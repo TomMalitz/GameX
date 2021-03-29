@@ -22,11 +22,11 @@ namespace GameX
             base.Initialize();
 
             Scene testScene = Scene.CreateWithDefaultRenderer(Color.CornflowerBlue);
-            testScene.SetDesignResolution(256, 244, Scene.SceneResolutionPolicy.NoBorderPixelPerfect);
+            testScene.SetDesignResolution(512, 288, Scene.SceneResolutionPolicy.BestFit);
 
-            TmxMap testLevel = testScene.Content.LoadTiledMap("Assets/Levels/Test/TMX/testLevel.tmx");
+            TmxMap testLevel = testScene.Content.LoadTiledMap("Assets/Levels/Test/test.tmx");
             Entity tiledEntity = testScene.CreateEntity("tiled-level");
-            tiledEntity.AddComponent(new TiledMapRenderer(testLevel, "Main"));
+            tiledEntity.AddComponent(new TiledMapRenderer(testLevel, "main"));
 
             Player player = new Player(testLevel);
             player.AttachToScene(testScene);
@@ -34,8 +34,8 @@ namespace GameX
 
             Scene = testScene;
 
-            //Window.Title = "Game X";
-            //Screen.SetSize(1280, 720);
+            Window.Title = "Game X";
+            Screen.SetSize(1280, 720);
 
         }
     }
