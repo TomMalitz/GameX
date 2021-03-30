@@ -17,7 +17,7 @@ namespace GameX.Entities
     {
 
         // Params
-        public float MoveSpeed = 150f;
+        public float MoveSpeed = 125f;
         public float DashSpeed = 350f;
         public float WallSlideSpeed = 100f;
         public float MaxGroundDashTime = 0.25f;
@@ -58,6 +58,12 @@ namespace GameX.Entities
         VirtualButton _attackInput;
         VirtualButton _weaponChangeInput;
 
+        class AnimationInstruction
+        {
+            public string name;
+            public SpriteAnimator.LoopMode loopMode;
+        }
+
         public Player(TmxMap sceneTileMap)
         {
             _sceneTileMap = sceneTileMap;
@@ -95,8 +101,9 @@ namespace GameX.Entities
         private void ConfigureAnimations()
         {
             Dictionary<string, int> fpsData = new Dictionary<string, int>();
-            fpsData.Add("idle", 8);
-            fpsData.Add("run", 14);
+            fpsData.Add("idle", 6);
+            fpsData.Add("run", 18);
+            fpsData.Add("dash", 18);
 
             _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, "Assets/Player/atlas", fpsData);
             this.AddComponent<SpriteAnimator>(_animator);
@@ -140,26 +147,70 @@ namespace GameX.Entities
         {
             base.Update();
 
-            string movementAnimation = HandleMovement();
+            HandleMovement();
+            AnimationInstruction animation = GetAnimationInstruction();
 
-            if (movementAnimation != null && !_animator.IsAnimationActive(movementAnimation))
-                _animator.Play(movementAnimation);
+            if (animation != null && !_animator.IsAnimationActive(animation.name))
+                _animator.Play(animation.name, animation.loopMode);
         }
 
-        public string HandleMovement()
+        private AnimationInstruction GetAnimationInstruction()
+        {
+            AnimationInstruction animation = new AnimationInstruction();
+
+            animation.name = "idle";
+            animation.loopMode = SpriteAnimator.LoopMode.Loop;
+
+            if (_velocity.X == 0 && _collisionState.Below)
+            {
+                animation.name = "idle";
+                animation.loopMode = SpriteAnimator.LoopMode.Loop;
+            }
+
+            if (_velocity.X != 0 && _velocity.Y == 0 && _collisionState.Below)
+            {
+                animation.name = "run";
+                animation.loopMode = SpriteAnimator.LoopMode.Loop;
+            }
+
+            if(_groundDashing || _airDashing)
+            {
+                animation.name = "dash";
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
+            }
+
+            if(_wallSliding && _velocity.Y < 0)
+            {
+                animation.name = "wall_slide";
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
+            }
+
+            if(_velocity.Y > 0)
+            {
+                animation.name = "jump";
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
+            }
+
+            if (_velocity.Y < 0 && !_wallSliding)
+            {
+                animation.name = "fall";
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
+            }
+
+            return animation;
+        }
+
+        public void HandleMovement()
         {
             Vector2 moveDir = new Vector2(_xAxisInput.Value, 0);
 
             bool xInputPresent = Math.Abs(moveDir.X) > 0;
-            string animation = null;
-
             // Horizontal movement input
 
             // start ground dash
             if ((_collisionState.Below || _wallSliding) && (_dashInput.IsPressed || _groundDashing))
             {
                 _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
-                animation = "run"; 
                 _groundDashing = true;
                 _groundDashTime += Time.DeltaTime;
             }
@@ -171,7 +222,6 @@ namespace GameX.Entities
                 {
                     _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
                 }
-                animation = "run";
                 _airDashing = true;
                 _airDashTime += Time.DeltaTime;
                 _velocity.Y = 0;
@@ -213,7 +263,6 @@ namespace GameX.Entities
                 if(_dashJumping)
                 {
                     _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
-                    animation = "run";
                     _wallJumpDashTime += Time.DeltaTime;
                 }
 
@@ -221,7 +270,6 @@ namespace GameX.Entities
                 if (!_airDashing && !_groundDashing && !_dashJumping)
                 {
                     _velocity.X = _facingRight ? MoveSpeed : -MoveSpeed;
-                    animation = "run";
                 }
             }
 
@@ -232,7 +280,6 @@ namespace GameX.Entities
                 if (!_groundDashing && !_airDashing)
                 {
                     _velocity.X = 0;
-                    animation = "idle";
                 }
 
                 // Stop dash jump momentarily if there is no x input
@@ -253,7 +300,6 @@ namespace GameX.Entities
                 _velocity.Y = -Mathf.Sqrt(2f * JumpHeight * Gravity);
                 _jumping = true;
                 _canJump = false;
-
 
                 if (Math.Abs(_velocity.X) == DashSpeed)
                 {
@@ -325,8 +371,6 @@ namespace GameX.Entities
                 _groundDashTime = 0;
             }
 
-
-            return animation;
         }
 
     }

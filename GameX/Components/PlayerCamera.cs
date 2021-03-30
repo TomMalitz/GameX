@@ -13,15 +13,13 @@ namespace GameX.Components
             : base(targetEntity, cameraStyle)
         {
             FollowLerp = 1.0f;
-            MapLockEnabled = true;
+            MapLockEnabled = false;
         }
 
         public override void OnAddedToEntity()
         {
             base.OnAddedToEntity();
             this.SetCenteredDeadzone(0, 0);
-            Debug.Log(Camera.Bounds);
-            Debug.Log(Camera.Position);
         }
 
         public void UpdateMapSize(Vector2 mapSize)

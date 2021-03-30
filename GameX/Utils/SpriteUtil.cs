@@ -108,7 +108,6 @@ namespace GameX.Utils
                 // Add the final animation
                 if (i == asepriteAtlasData.frames.Count - 1)
                 {
-                    Debug.Log("Last Anim Name: {0}", currentAnimName);
                     Debug.Log("{0}, {1}, {2}", currentAnimName, currentAnimStartIndex, currentAnimFrameCount);
                     AddAnimationWithFPSLookup(ref animator, currentAnimName, currentAnimStartIndex, currentAnimFrameCount, sprites, fpsDictionary);
                     break;

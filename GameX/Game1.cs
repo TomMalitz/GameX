@@ -12,7 +12,7 @@ namespace GameX
 
         public Game1(): base(width: 1280, height: 720, isFullScreen: false, windowTitle: "Game X")
         {
-            
+            Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
@@ -22,7 +22,7 @@ namespace GameX
             base.Initialize();
 
             Scene testScene = Scene.CreateWithDefaultRenderer(Color.CornflowerBlue);
-            testScene.SetDesignResolution(512, 288, Scene.SceneResolutionPolicy.NoBorder);
+            testScene.SetDesignResolution(512, 288, Scene.SceneResolutionPolicy.NoBorderPixelPerfect);
             //testScene.SetDesignResolution(1280, 720, Scene.SceneResolutionPolicy.NoBorderPixelPerfect);
 
             TmxMap testLevel = testScene.Content.LoadTiledMap("Assets/Levels/Test/test.tmx");
@@ -40,7 +40,7 @@ namespace GameX
 
             //IsFixedTimeStep = true;
 
-            //Core.DefaultSamplerState = SamplerState.PointWrap;
+            //Core.DefaultSamplerState = SamplerState.PointClamp;
             //Core.DebugRenderEnabled = true;
 
         }
