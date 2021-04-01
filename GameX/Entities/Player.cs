@@ -20,11 +20,13 @@ namespace GameX.Entities
         public float MoveSpeed = 125f;
         public float DashSpeed = 350f;
         public float WallSlideSpeed = 100f;
-        public float MaxGroundDashTime = 0.25f;
+        public float MaxGroundDashTime = 0.50f;
         public float MaxAirDashTime = 0.35f;
         public float Gravity = 1000f;
         public float TerminalVelocity = 350f;
         public float JumpHeight = 75f;
+        public float halfChargeTime = 1f;
+        public float fullChargeTime = 2f;
 
         // Components
         SpriteAnimator _animator;
@@ -36,6 +38,8 @@ namespace GameX.Entities
         // Local state
         TiledMapMover.CollisionState _collisionState = new TiledMapMover.CollisionState();
         Vector2 _velocity;
+        AnimationInstruction _lastAnimation;
+        AnimationInstruction _currentAnimation;
         bool _facingRight = true;
         bool _jumping = false;
         bool _dashJumping = false;
@@ -44,6 +48,10 @@ namespace GameX.Entities
         bool _airDashing = false;
         bool _canAirDash = true;
         bool _canJump = true;
+        bool _chargingShot = false;
+        bool _halfChargeReady = false;
+        bool _fullChargeReady = false;
+        float _chargeTime = 0;
         float _groundDashTime = 0;
         float _airDashTime = 0;
         float _wallJumpDashTime = 0;
@@ -104,10 +112,14 @@ namespace GameX.Entities
             fpsData.Add("idle", 6);
             fpsData.Add("run", 18);
             fpsData.Add("dash", 18);
+            fpsData.Add("idle_shoot_weak", 18);
+            fpsData.Add("idle_shoot_strong", 18);
 
             _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, "Assets/Player/atlas", fpsData);
             this.AddComponent<SpriteAnimator>(_animator);
 
+            _lastAnimation = new AnimationInstruction();
+            _currentAnimation = new AnimationInstruction();
             _animator.Play("idle");
         }
 
@@ -148,10 +160,21 @@ namespace GameX.Entities
             base.Update();
 
             HandleMovement();
-            AnimationInstruction animation = GetAnimationInstruction();
+            HandleWeaponInput();
 
-            if (animation != null && !_animator.IsAnimationActive(animation.name))
-                _animator.Play(animation.name, animation.loopMode);
+            _lastAnimation = _currentAnimation;
+
+            if (!_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once) ||
+                (_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once)
+                && _animator.AnimationState.Equals(SpriteAnimator.State.Completed)))
+            {
+       
+                _currentAnimation = GetAnimationInstruction();
+
+                if (_currentAnimation != null && !_animator.IsAnimationActive(_currentAnimation.name))
+                    _animator.Play(_currentAnimation.name, _currentAnimation.loopMode);
+
+            }
         }
 
         private AnimationInstruction GetAnimationInstruction()
@@ -161,6 +184,7 @@ namespace GameX.Entities
             animation.name = "idle";
             animation.loopMode = SpriteAnimator.LoopMode.Loop;
 
+            // movement animations
             if (_velocity.X == 0 && _collisionState.Below)
             {
                 animation.name = "idle";
@@ -179,28 +203,71 @@ namespace GameX.Entities
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
-            if(_wallSliding && _velocity.Y < 0)
+            if(_wallSliding && _velocity.Y > 0)
             {
                 animation.name = "wall_slide";
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
-            if(_velocity.Y > 0)
+            if(_velocity.Y < 0)
             {
                 animation.name = "jump";
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
-            if (_velocity.Y < 0 && !_wallSliding)
+            if (_velocity.Y > 0 && !_wallSliding)
             {
                 animation.name = "fall";
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
+            // action animations
+            if(animation.name == "idle" && _attackInput.IsPressed)
+            {
+                animation.name = "idle_shoot_strong";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+            }
+
+            if (animation.name == "idle" && _attackInput.IsReleased && _fullChargeReady)
+            {
+                animation.name = "idle_shoot_strong";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+            }
+
             return animation;
         }
 
-        public void HandleMovement()
+        private void HandleWeaponInput()
+        {
+            if(_attackInput.IsDown)
+            {
+                _chargeTime += Time.DeltaTime;
+                _chargingShot = true;
+                
+                // reset charge ready flags
+                _halfChargeReady = false;
+                _fullChargeReady = false;
+            }
+
+            if(_attackInput.IsReleased)
+            {
+                _chargeTime = 0;
+                _chargingShot = false;
+            }
+
+            if(_chargeTime >= halfChargeTime)
+            {
+                _halfChargeReady = true;
+            }
+
+            if(_chargeTime >= fullChargeTime)
+            {
+                _halfChargeReady = false;
+                _fullChargeReady = true;
+            }  
+        }
+
+        private void HandleMovement()
         {
             Vector2 moveDir = new Vector2(_xAxisInput.Value, 0);
 
