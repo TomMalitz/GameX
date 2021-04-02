@@ -56,7 +56,6 @@ namespace GameX.Entities
             base.Update();
 
             _projectileMover.Move(Speed * Time.DeltaTime);
-
         }
 
 

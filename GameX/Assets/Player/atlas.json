@@ -27,8 +27,17 @@
     "duration": 100
    },
    {
-    "filename": "anim_duck.aseprite",
+    "filename": "anim_dash 3.aseprite",
     "frame": { "x": 144, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   {
+    "filename": "anim_duck.aseprite",
+    "frame": { "x": 192, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -37,15 +46,6 @@
    },
    {
     "filename": "anim_fall 0.aseprite",
-    "frame": { "x": 192, "y": 0, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
-   },
-   {
-    "filename": "anim_fall 1.aseprite",
     "frame": { "x": 240, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -54,7 +54,7 @@
     "duration": 100
    },
    {
-    "filename": "anim_fall_loop.aseprite",
+    "filename": "anim_fall 1.aseprite",
     "frame": { "x": 288, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -63,7 +63,7 @@
     "duration": 100
    },
    {
-    "filename": "anim_grounded 0.aseprite",
+    "filename": "anim_fall_loop.aseprite",
     "frame": { "x": 336, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -72,7 +72,7 @@
     "duration": 100
    },
    {
-    "filename": "anim_grounded 1.aseprite",
+    "filename": "anim_grounded 0.aseprite",
     "frame": { "x": 384, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -81,7 +81,7 @@
     "duration": 100
    },
    {
-    "filename": "anim_grounded 2.aseprite",
+    "filename": "anim_grounded 1.aseprite",
     "frame": { "x": 432, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -90,8 +90,17 @@
     "duration": 100
    },
    {
-    "filename": "anim_idle 0.aseprite",
+    "filename": "anim_grounded 2.aseprite",
     "frame": { "x": 480, "y": 0, "w": 48, "h": 48 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
+    "sourceSize": { "w": 48, "h": 48 },
+    "duration": 100
+   },
+   {
+    "filename": "anim_idle 0.aseprite",
+    "frame": { "x": 528, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -100,15 +109,6 @@
    },
    {
     "filename": "anim_idle 1.aseprite",
-    "frame": { "x": 528, "y": 0, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 50
-   },
-   {
-    "filename": "anim_idle 2.aseprite",
     "frame": { "x": 576, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -117,7 +117,7 @@
     "duration": 50
    },
    {
-    "filename": "anim_idle 3.aseprite",
+    "filename": "anim_idle 2.aseprite",
     "frame": { "x": 624, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -126,16 +126,16 @@
     "duration": 50
    },
    {
-    "filename": "anim_idle_shoot 0.aseprite",
+    "filename": "anim_idle 3.aseprite",
     "frame": { "x": 672, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
     "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
+    "duration": 50
    },
    {
-    "filename": "anim_idle_shoot 1.aseprite",
+    "filename": "anim_idle_shoot_strong 0.aseprite",
     "frame": { "x": 720, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -144,7 +144,7 @@
     "duration": 100
    },
    {
-    "filename": "anim_idle_shoot 2.aseprite",
+    "filename": "anim_idle_shoot_strong 1.aseprite",
     "frame": { "x": 768, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
@@ -153,35 +153,8 @@
     "duration": 200
    },
    {
-    "filename": "anim_idle_shoot 3.aseprite",
-    "frame": { "x": 816, "y": 0, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
-   },
-   {
-    "filename": "anim_idle_shoot_strong 0.aseprite",
-    "frame": { "x": 864, "y": 0, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 100
-   },
-   {
-    "filename": "anim_idle_shoot_strong 1.aseprite",
-    "frame": { "x": 912, "y": 0, "w": 48, "h": 48 },
-    "rotated": false,
-    "trimmed": false,
-    "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
-    "sourceSize": { "w": 48, "h": 48 },
-    "duration": 200
-   },
-   {
     "filename": "anim_idle_shoot_strong 2.aseprite",
-    "frame": { "x": 960, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 816, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -190,7 +163,7 @@
    },
    {
     "filename": "anim_idle_shoot_strong 3.aseprite",
-    "frame": { "x": 1008, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 864, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -199,7 +172,7 @@
    },
    {
     "filename": "anim_idle_shoot_strong 4.aseprite",
-    "frame": { "x": 1056, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 912, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -208,7 +181,7 @@
    },
    {
     "filename": "anim_idle_shoot_weak 0.aseprite",
-    "frame": { "x": 1104, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 960, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -217,7 +190,7 @@
    },
    {
     "filename": "anim_idle_shoot_weak 1.aseprite",
-    "frame": { "x": 1152, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1008, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -226,7 +199,7 @@
    },
    {
     "filename": "anim_idle_shoot_weak 2.aseprite",
-    "frame": { "x": 1200, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1056, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -235,7 +208,7 @@
    },
    {
     "filename": "anim_idle_shoot_weak 3.aseprite",
-    "frame": { "x": 1248, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1104, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -244,7 +217,7 @@
    },
    {
     "filename": "anim_jump 0.aseprite",
-    "frame": { "x": 1296, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1152, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -253,7 +226,7 @@
    },
    {
     "filename": "anim_jump 1.aseprite",
-    "frame": { "x": 1344, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1200, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -262,7 +235,7 @@
    },
    {
     "filename": "anim_jump 2.aseprite",
-    "frame": { "x": 1392, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1248, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -271,7 +244,7 @@
    },
    {
     "filename": "anim_jump_loop.aseprite",
-    "frame": { "x": 1440, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1296, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -280,7 +253,7 @@
    },
    {
     "filename": "anim_run 0.aseprite",
-    "frame": { "x": 1488, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1344, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -289,7 +262,7 @@
    },
    {
     "filename": "anim_run 1.aseprite",
-    "frame": { "x": 1536, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1392, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -298,7 +271,7 @@
    },
    {
     "filename": "anim_run 2.aseprite",
-    "frame": { "x": 1584, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1440, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -307,7 +280,7 @@
    },
    {
     "filename": "anim_run 3.aseprite",
-    "frame": { "x": 1632, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1488, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -316,7 +289,7 @@
    },
    {
     "filename": "anim_run 4.aseprite",
-    "frame": { "x": 1680, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1536, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -325,7 +298,7 @@
    },
    {
     "filename": "anim_run 5.aseprite",
-    "frame": { "x": 1728, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1584, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -334,7 +307,7 @@
    },
    {
     "filename": "anim_run 6.aseprite",
-    "frame": { "x": 1776, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1632, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -343,7 +316,7 @@
    },
    {
     "filename": "anim_run 7.aseprite",
-    "frame": { "x": 1824, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1680, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -352,7 +325,7 @@
    },
    {
     "filename": "anim_run 8.aseprite",
-    "frame": { "x": 1872, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1728, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -361,7 +334,7 @@
    },
    {
     "filename": "anim_run 9.aseprite",
-    "frame": { "x": 1920, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1776, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -370,7 +343,7 @@
    },
    {
     "filename": "anim_run_shoot 0.aseprite",
-    "frame": { "x": 1968, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1824, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -379,7 +352,7 @@
    },
    {
     "filename": "anim_run_shoot 1.aseprite",
-    "frame": { "x": 2016, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1872, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -388,7 +361,7 @@
    },
    {
     "filename": "anim_run_shoot 2.aseprite",
-    "frame": { "x": 2064, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1920, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -397,7 +370,7 @@
    },
    {
     "filename": "anim_run_shoot 3.aseprite",
-    "frame": { "x": 2112, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 1968, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -406,7 +379,7 @@
    },
    {
     "filename": "anim_run_shoot 4.aseprite",
-    "frame": { "x": 2160, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2016, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -415,7 +388,7 @@
    },
    {
     "filename": "anim_run_shoot 5.aseprite",
-    "frame": { "x": 2208, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2064, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -424,7 +397,7 @@
    },
    {
     "filename": "anim_run_shoot 6.aseprite",
-    "frame": { "x": 2256, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2112, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -433,7 +406,7 @@
    },
    {
     "filename": "anim_run_shoot 7.aseprite",
-    "frame": { "x": 2304, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2160, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -442,7 +415,7 @@
    },
    {
     "filename": "anim_run_shoot 8.aseprite",
-    "frame": { "x": 2352, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2208, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -451,7 +424,7 @@
    },
    {
     "filename": "anim_run_shoot 9.aseprite",
-    "frame": { "x": 2400, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2256, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -460,7 +433,7 @@
    },
    {
     "filename": "anim_wall_slide.aseprite",
-    "frame": { "x": 2448, "y": 0, "w": 48, "h": 48 },
+    "frame": { "x": 2304, "y": 0, "w": 48, "h": 48 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 48, "h": 48 },
@@ -473,7 +446,7 @@
   "version": "1.2.25-x64",
   "image": "atlas.png",
   "format": "RGBA8888",
-  "size": { "w": 2496, "h": 48 },
+  "size": { "w": 2352, "h": 48 },
   "scale": "1"
  }
 }

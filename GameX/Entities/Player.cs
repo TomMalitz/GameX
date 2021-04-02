@@ -27,6 +27,7 @@ namespace GameX.Entities
         public float JumpHeight = 75f;
         public float halfChargeTime = 1f;
         public float fullChargeTime = 2f;
+        public float minRunShootTapTime = 1f;
 
         // Components
         SpriteAnimator _animator;
@@ -55,6 +56,7 @@ namespace GameX.Entities
         float _groundDashTime = 0;
         float _airDashTime = 0;
         float _wallJumpDashTime = 0;
+        float _currentRunShootTapTime = 0;
 
         // Input Axis
         VirtualIntegerAxis _xAxisInput;
@@ -70,6 +72,7 @@ namespace GameX.Entities
         {
             public string name;
             public SpriteAnimator.LoopMode loopMode;
+            public int startFrame = 0;
         }
 
         public Player(TmxMap sceneTileMap)
@@ -110,7 +113,9 @@ namespace GameX.Entities
         {
             Dictionary<string, int> fpsData = new Dictionary<string, int>();
             fpsData.Add("idle", 6);
+            fpsData.Add("grounded", 25);
             fpsData.Add("run", 18);
+            fpsData.Add("run_shoot", 18);
             fpsData.Add("dash", 18);
             fpsData.Add("idle_shoot_weak", 18);
             fpsData.Add("idle_shoot_strong", 18);
@@ -164,17 +169,45 @@ namespace GameX.Entities
 
             _lastAnimation = _currentAnimation;
 
+            /** Proceed to next animation if:
+             * last animation was not Once
+             * last animation was Once and is completed
+             * next animation can interrupt last animation */
             if (!_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once) ||
                 (_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once)
-                && _animator.AnimationState.Equals(SpriteAnimator.State.Completed)))
+                && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
+                || CanNextAnimationInterruptLast(GetAnimationInstruction(), _lastAnimation))
             {
        
                 _currentAnimation = GetAnimationInstruction();
 
+                /*if(_animator.AnimationState.Equals(SpriteAnimator.State.Completed) && _currentAnimation.name == "run_shoot" && _attackInput.IsDown)
+                {
+                    _currentAnimation.loopMode = SpriteAnimator.LoopMode.Loop;
+                }*/
+
                 if (_currentAnimation != null && !_animator.IsAnimationActive(_currentAnimation.name))
-                    _animator.Play(_currentAnimation.name, _currentAnimation.loopMode);
+                {
+
+                    /*Debug.Log(_currentAnimation.startFrame);
+                    if (_currentAnimation.startFrame != 0 && _lastAnimation.name != _currentAnimation.name)
+                    {
+                        _animator.PlayAtFrame(_currentAnimation.name, _currentAnimation.startFrame, _currentAnimation.loopMode);
+                    } else
+                    {*/
+                        _animator.Play(_currentAnimation.name, _currentAnimation.loopMode);
+                    //}
+                }
 
             }
+        }
+
+        private bool CanNextAnimationInterruptLast(AnimationInstruction nextAnimation, AnimationInstruction lastAnimation)
+        {
+            if (lastAnimation.name == "grounded" && nextAnimation.name == "idle") return false;
+            if (lastAnimation.name == "idle_shoot_strong" && nextAnimation.name == "idle") return false;
+            if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run") return false;
+            return true;
         }
 
         private AnimationInstruction GetAnimationInstruction()
@@ -185,6 +218,12 @@ namespace GameX.Entities
             animation.loopMode = SpriteAnimator.LoopMode.Loop;
 
             // movement animations
+            if(!_collisionState.WasGroundedLastFrame && _collisionState.BecameGroundedThisFrame)
+            {
+                animation.name = "grounded";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                return animation;
+            }
             if (_velocity.X == 0 && _collisionState.Below)
             {
                 animation.name = "idle";
@@ -195,6 +234,7 @@ namespace GameX.Entities
             {
                 animation.name = "run";
                 animation.loopMode = SpriteAnimator.LoopMode.Loop;
+                animation.startFrame = _animator.CurrentFrame;
             }
 
             if(_groundDashing || _airDashing)
@@ -232,6 +272,13 @@ namespace GameX.Entities
             {
                 animation.name = "idle_shoot_strong";
                 animation.loopMode = SpriteAnimator.LoopMode.Once;
+            }
+
+            if(animation.name == "run" && _attackInput.IsPressed)
+            {
+                animation.name = "run_shoot";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.startFrame = _animator.CurrentFrame + 1;
             }
 
             return animation;

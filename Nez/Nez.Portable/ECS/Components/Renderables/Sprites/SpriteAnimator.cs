@@ -194,6 +194,23 @@ namespace Nez.Sprites
 			_loopMode = loopMode ?? LoopMode.Loop;
 		}
 
+		public void PlayAtFrame(string name, int frame, LoopMode? loopMode = null)
+		{
+			if(frame >= CurrentAnimation.Sprites.Length || frame <= 0)
+			{
+				frame = 0;
+			}
+			Debug.Log("NEZ: " + CurrentAnimation.Sprites.Length);
+			CurrentAnimation = _animations[name];
+			CurrentAnimationName = name;
+			CurrentFrame = frame;
+			AnimationState = State.Running;
+
+			Sprite = CurrentAnimation.Sprites[frame];
+			_elapsedTime = 0;
+			_loopMode = loopMode ?? LoopMode.Loop;
+		}
+
 		/// <summary>
 		/// checks to see if the animation is playing (i.e. the animation is active. it may still be in the paused state)
 		/// </summary>
