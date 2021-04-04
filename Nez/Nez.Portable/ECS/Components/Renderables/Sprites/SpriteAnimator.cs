@@ -196,12 +196,11 @@ namespace Nez.Sprites
 
 		public void PlayAtFrame(string name, int frame, LoopMode? loopMode = null)
 		{
-			if(frame >= CurrentAnimation.Sprites.Length || frame <= 0)
+			CurrentAnimation = _animations[name];
+			if (frame >= CurrentAnimation.Sprites.Length || frame <= 0)
 			{
 				frame = 0;
 			}
-			Debug.Log("NEZ: " + CurrentAnimation.Sprites.Length);
-			CurrentAnimation = _animations[name];
 			CurrentAnimationName = name;
 			CurrentFrame = frame;
 			AnimationState = State.Running;

@@ -41,6 +41,7 @@ namespace GameX.Entities
         Vector2 _velocity;
         AnimationInstruction _lastAnimation;
         AnimationInstruction _currentAnimation;
+        ChargeState _chargeState;
         bool _facingRight = true;
         bool _jumping = false;
         bool _dashJumping = false;
@@ -50,8 +51,6 @@ namespace GameX.Entities
         bool _canAirDash = true;
         bool _canJump = true;
         bool _chargingShot = false;
-        bool _halfChargeReady = false;
-        bool _fullChargeReady = false;
         float _chargeTime = 0;
         float _groundDashTime = 0;
         float _airDashTime = 0;
@@ -67,6 +66,13 @@ namespace GameX.Entities
         VirtualButton _dashInput;
         VirtualButton _attackInput;
         VirtualButton _weaponChangeInput;
+
+        enum ChargeState
+        {
+            NONE,
+            HALF,
+            FULL
+        }
 
         class AnimationInstruction
         {
@@ -181,22 +187,16 @@ namespace GameX.Entities
        
                 _currentAnimation = GetAnimationInstruction();
 
-                /*if(_animator.AnimationState.Equals(SpriteAnimator.State.Completed) && _currentAnimation.name == "run_shoot" && _attackInput.IsDown)
-                {
-                    _currentAnimation.loopMode = SpriteAnimator.LoopMode.Loop;
-                }*/
-
                 if (_currentAnimation != null && !_animator.IsAnimationActive(_currentAnimation.name))
                 {
-
-                    /*Debug.Log(_currentAnimation.startFrame);
-                    if (_currentAnimation.startFrame != 0 && _lastAnimation.name != _currentAnimation.name)
+                    if (_currentAnimation.startFrame != 0)
                     {
                         _animator.PlayAtFrame(_currentAnimation.name, _currentAnimation.startFrame, _currentAnimation.loopMode);
-                    } else
-                    {*/
+                    }
+                    else
+                    {
                         _animator.Play(_currentAnimation.name, _currentAnimation.loopMode);
-                    //}
+                    }
                 }
 
             }
@@ -207,6 +207,8 @@ namespace GameX.Entities
             if (lastAnimation.name == "grounded" && nextAnimation.name == "idle") return false;
             if (lastAnimation.name == "idle_shoot_strong" && nextAnimation.name == "idle") return false;
             if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run") return false;
+            if (lastAnimation.name == "jump_shoot" && nextAnimation.name == "jump") return false;
+            if (lastAnimation.name == "fall_shoot" && nextAnimation.name == "fall") return false;
             return true;
         }
 
@@ -261,24 +263,48 @@ namespace GameX.Entities
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
+
+            bool isShooting = _attackInput.IsPressed || (_attackInput.IsReleased && !_chargeState.Equals(ChargeState.NONE));
+
             // action animations
-            if(animation.name == "idle" && _attackInput.IsPressed)
+            if (animation.name == "idle" && isShooting)
             {
                 animation.name = "idle_shoot_strong";
                 animation.loopMode = SpriteAnimator.LoopMode.Once;
             }
 
-            if (animation.name == "idle" && _attackInput.IsReleased && _fullChargeReady)
+            /*if (animation.name == "idle" && _attackInput.IsReleased && !_chargeState.Equals(ChargeState.NONE))
             {
                 animation.name = "idle_shoot_strong";
                 animation.loopMode = SpriteAnimator.LoopMode.Once;
-            }
+            }*/
 
-            if(animation.name == "run" && _attackInput.IsPressed)
+            if(animation.name == "run" && isShooting)
             {
                 animation.name = "run_shoot";
                 animation.loopMode = SpriteAnimator.LoopMode.Once;
-                animation.startFrame = _animator.CurrentFrame + 1;
+                animation.startFrame = _animator.CurrentFrame;
+            }
+
+            if(animation.name == "jump" && isShooting)
+            {
+                animation.name = "jump_shoot";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.startFrame = _animator.CurrentFrame;
+            }
+
+            if (animation.name == "fall" && isShooting)
+            {
+                animation.name = "fall_shoot";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.startFrame = _animator.CurrentFrame;
+            }
+
+            if (_lastAnimation.name == "jump_shoot" && _velocity.Y > 0)
+            {
+                animation.name = "fall_shoot";
+                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.startFrame = _animator.CurrentFrame;
             }
 
             return animation;
@@ -290,10 +316,9 @@ namespace GameX.Entities
             {
                 _chargeTime += Time.DeltaTime;
                 _chargingShot = true;
-                
+
                 // reset charge ready flags
-                _halfChargeReady = false;
-                _fullChargeReady = false;
+                _chargeState = ChargeState.NONE;
             }
 
             if(_attackInput.IsReleased)
@@ -304,13 +329,12 @@ namespace GameX.Entities
 
             if(_chargeTime >= halfChargeTime)
             {
-                _halfChargeReady = true;
+                _chargeState = ChargeState.HALF;
             }
 
             if(_chargeTime >= fullChargeTime)
             {
-                _halfChargeReady = false;
-                _fullChargeReady = true;
+                _chargeState = ChargeState.FULL;
             }  
         }
 
