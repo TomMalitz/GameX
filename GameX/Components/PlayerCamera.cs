@@ -20,6 +20,7 @@ namespace GameX.Components
         {
             base.OnAddedToEntity();
             this.SetCenteredDeadzone(0, 0);
+            this.Entity.UpdateOrder = int.MaxValue;
         }
 
         public void UpdateMapSize(Vector2 mapSize)

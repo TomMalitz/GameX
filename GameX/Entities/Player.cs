@@ -13,10 +13,11 @@ using GameX.Utils;
 
 namespace GameX.Entities
 {
-    class Player : Entity
+    class Player : Entity, ITriggerListener
     {
 
         // Params
+        public Vector2 projectileLocationOffset = new Vector2(0,0);
         public float MoveSpeed = 125f;
         public float DashSpeed = 350f;
         public float WallSlideSpeed = 100f;
@@ -27,7 +28,8 @@ namespace GameX.Entities
         public float JumpHeight = 75f;
         public float halfChargeTime = 1f;
         public float fullChargeTime = 2f;
-        public float minRunShootTapTime = 1f;
+        public float projectileSpeed = 350f;
+        public float attackInputLockTime = 0.10f;
 
         // Components
         SpriteAnimator _animator;
@@ -38,6 +40,7 @@ namespace GameX.Entities
 
         // Local state
         TiledMapMover.CollisionState _collisionState = new TiledMapMover.CollisionState();
+        ColliderTriggerHelper _triggerHelper;
         Vector2 _velocity;
         AnimationInstruction _lastAnimation;
         AnimationInstruction _currentAnimation;
@@ -49,13 +52,14 @@ namespace GameX.Entities
         bool _groundDashing = false;
         bool _airDashing = false;
         bool _canAirDash = true;
-        bool _canJump = true;
+        bool _canJump = false;
         bool _chargingShot = false;
+        bool _canFire = false;
         float _chargeTime = 0;
         float _groundDashTime = 0;
         float _airDashTime = 0;
         float _wallJumpDashTime = 0;
-        float _currentRunShootTapTime = 0;
+        float _attackLockTime = 0;
 
         // Input Axis
         VirtualIntegerAxis _xAxisInput;
@@ -93,7 +97,6 @@ namespace GameX.Entities
 
             // Attach player camera to scene
             Scene.Camera.AddComponent(_camera);
-            _camera.Entity.UpdateOrder = int.MaxValue;
 
             // Setup components and inputs
             _mover = this.AddComponent(new TiledMapMover(_sceneTileMap.GetLayer<TmxLayer>("main")));
@@ -112,7 +115,14 @@ namespace GameX.Entities
             int widthOffset = 1;
             int heightOffset = 2;
 
-            _collider = this.AddComponent(new BoxCollider(-width / 2 + widthOffset, -height / 2 + heightOffset, width, height));
+            BoxCollider boxCollider = new BoxCollider(-width / 2 + widthOffset, -height / 2 + heightOffset, width, height);
+            _collider = this.AddComponent(boxCollider);
+            _collider.IsTrigger = true;
+
+            _triggerHelper = new ColliderTriggerHelper(this);
+
+            Flags.SetFlagExclusive(ref _collider.CollidesWithLayers, (int)PhysicsLayers.ENEMIES);
+            Flags.SetFlagExclusive(ref _collider.PhysicsLayer, (int)PhysicsLayers.PLAYER);
         }
 
         private void ConfigureAnimations()
@@ -171,6 +181,8 @@ namespace GameX.Entities
             base.Update();
 
             HandleMovement();
+            _triggerHelper.Update();
+
             HandleWeaponInput();
 
             _lastAnimation = _currentAnimation;
@@ -201,6 +213,8 @@ namespace GameX.Entities
 
             }
         }
+
+        #region ANIMATIONS
 
         private bool CanNextAnimationInterruptLast(AnimationInstruction nextAnimation, AnimationInstruction lastAnimation)
         {
@@ -273,12 +287,6 @@ namespace GameX.Entities
                 animation.loopMode = SpriteAnimator.LoopMode.Once;
             }
 
-            /*if (animation.name == "idle" && _attackInput.IsReleased && !_chargeState.Equals(ChargeState.NONE))
-            {
-                animation.name = "idle_shoot_strong";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
-            }*/
-
             if(animation.name == "run" && isShooting)
             {
                 animation.name = "run_shoot";
@@ -310,6 +318,9 @@ namespace GameX.Entities
             return animation;
         }
 
+        #endregion
+
+        #region WEAPONS
         private void HandleWeaponInput()
         {
             if(_attackInput.IsDown)
@@ -323,8 +334,30 @@ namespace GameX.Entities
 
             if(_attackInput.IsReleased)
             {
+                if(!_chargeState.Equals(ChargeState.NONE))
+                {
+                    SpawnProjectile();
+                    _canFire = false;
+                }
                 _chargeTime = 0;
                 _chargingShot = false;
+            }
+
+            if (_attackInput.IsPressed && _canFire)
+            {
+                SpawnProjectile();
+                _canFire = false;
+            }
+
+            if (!_attackInput.IsDown)
+            {
+                _attackLockTime += Time.DeltaTime;
+            }
+
+            if(_attackLockTime >= attackInputLockTime)
+            {
+                _attackLockTime = 0;
+                _canFire = true;
             }
 
             if(_chargeTime >= halfChargeTime)
@@ -338,12 +371,56 @@ namespace GameX.Entities
             }  
         }
 
+        private void SpawnProjectile()
+        {
+            AnimationInstruction spawnAnimInstruction = new AnimationInstruction();
+            spawnAnimInstruction.name = "normal_projectile";
+            spawnAnimInstruction.loopMode = SpriteAnimator.LoopMode.Loop;
+
+            if (!_chargeState.Equals(ChargeState.NONE))
+            {
+                spawnAnimInstruction.name = "half_projectile";
+                spawnAnimInstruction.loopMode = SpriteAnimator.LoopMode.ClampForever;
+            }
+
+            // spawn projectile
+            float speed = _facingRight ? projectileSpeed : -projectileSpeed;
+            Projectile projectile = new Projectile(Scene,
+                this.Position + GetProjectileOffsetForAnimation(_currentAnimation.name),
+                new Vector2(speed, 0),
+                PhysicsLayers.PLAYER_PROJECTILE,
+                new Vector2(9, 9),
+                "Assets/Player/Weapons/WaterCannon/Projectiles/atlas",
+                spawnAnimInstruction.name,
+                spawnAnimInstruction.loopMode);
+
+        }
+
+        private Vector2 GetProjectileOffsetForAnimation(string animationName)
+        {
+            Vector2 offset = new Vector2(12, 4);
+            if (animationName.Contains("jump") || animationName.Contains("fall"))
+            {
+                offset = new Vector2(12, -5);
+            }
+            if(_animator.FlipX)
+            {
+                offset.X *= -1;
+            }
+            return offset;
+        }
+
+        #endregion
+
+        #region MOVEMENT
+
         private void HandleMovement()
         {
+
+            // Horizontal movement input
             Vector2 moveDir = new Vector2(_xAxisInput.Value, 0);
 
             bool xInputPresent = Math.Abs(moveDir.X) > 0;
-            // Horizontal movement input
 
             // start ground dash
             if ((_collisionState.Below || _wallSliding) && (_dashInput.IsPressed || _groundDashing))
@@ -432,7 +509,6 @@ namespace GameX.Entities
             // Vertical Movement
 
             // start jumping
-       
             if ((_canJump || _wallSliding) && !_jumping && _jumpInput.IsPressed)
             {
                 _velocity.Y = -Mathf.Sqrt(2f * JumpHeight * Gravity);
@@ -476,14 +552,12 @@ namespace GameX.Entities
                 _velocity.Y = Mathf.Clamp(_velocity.Y, _velocity.Y, TerminalVelocity);
             }
 
-            //_subpixelV2.Update(ref _velocity);
             _mover.Move(_velocity * Time.DeltaTime, _collider, _collisionState);
 
             // stop jump with collision below or above
             if (_collisionState.Below || _collisionState.Above)
             {
                 _velocity.Y = 0;
-               // Debug.Log("ZEROING Y VEL GROUNDED");
                 _jumping = false;
             }
 
@@ -509,6 +583,18 @@ namespace GameX.Entities
                 _groundDashTime = 0;
             }
 
+        }
+
+        #endregion
+
+        void ITriggerListener.OnTriggerEnter(Collider other, Collider self)
+        {
+            Debug.Log("PLAYER TRIGGER ENTER");
+        }
+
+        void ITriggerListener.OnTriggerExit(Collider other, Collider self)
+        {
+            Debug.Log("PLAYER TRIGGER EXIT");
         }
 
     }

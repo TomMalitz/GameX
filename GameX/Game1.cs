@@ -31,7 +31,11 @@ namespace GameX
 
             Player player = new Player(testLevel);
             player.AttachToScene(testScene);
-            player.Position = new Vector2(100, 200);
+            player.Position = new Vector2(50, 50);
+
+            Enemy testEnemy = new Enemy(testLevel);
+            testEnemy.AttachToScene(testScene);
+            testEnemy.Position = new Vector2(250, 50);
 
             Scene = testScene;
 
@@ -41,7 +45,7 @@ namespace GameX
             //IsFixedTimeStep = true;
 
             //Core.DefaultSamplerState = SamplerState.PointClamp;
-            //Core.DebugRenderEnabled = true;
+            Core.DebugRenderEnabled = true;
 
         }
     }

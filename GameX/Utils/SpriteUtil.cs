@@ -98,8 +98,8 @@ namespace GameX.Utils
             int currentAnimFrameCount = 1;
             int currentAnimStartIndex = 0;
             string currentAnimName;
-            Debug.Log("Sprite Count: {0}", sprites.Count);
-            Debug.Log("Frame Data Count: {0}", asepriteAtlasData.frames.Count);
+            //Debug.Log("Sprite Count: {0}", sprites.Count);
+            //Debug.Log("Frame Data Count: {0}", asepriteAtlasData.frames.Count);
             for (int i=0; i< asepriteAtlasData.frames.Count; i++)
             {
                 AsepriteAtlasFrame currentFrame = asepriteAtlasData.frames[i];
@@ -108,7 +108,7 @@ namespace GameX.Utils
                 // Add the final animation
                 if (i == asepriteAtlasData.frames.Count - 1)
                 {
-                    Debug.Log("{0}, {1}, {2}", currentAnimName, currentAnimStartIndex, currentAnimFrameCount);
+                    //Debug.Log("{0}, {1}, {2}", currentAnimName, currentAnimStartIndex, currentAnimFrameCount);
                     AddAnimationWithFPSLookup(ref animator, currentAnimName, currentAnimStartIndex, currentAnimFrameCount, sprites, fpsDictionary);
                     break;
                 }
@@ -119,7 +119,7 @@ namespace GameX.Utils
                     currentAnimFrameCount++;
                 } else
                 {
-                    Debug.Log("{0}, {1}, {2}", currentAnimName, currentAnimStartIndex, currentAnimFrameCount);
+                    //Debug.Log("{0}, {1}, {2}", currentAnimName, currentAnimStartIndex, currentAnimFrameCount);
                     AddAnimationWithFPSLookup(ref animator, currentAnimName, currentAnimStartIndex, currentAnimFrameCount, sprites, fpsDictionary);
 
                     currentAnimFrameCount = 1; // reset frame count for next animation

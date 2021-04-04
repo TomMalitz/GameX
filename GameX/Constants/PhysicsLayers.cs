@@ -4,7 +4,12 @@ using System.Text;
 
 namespace GameX.Constants
 {
-    class PhysicsLayers
+    public enum PhysicsLayers
     {
+        PLAYER = 1,
+        PLAYER_PROJECTILE = 2,
+        ENEMIES = 3,
+        ENEMY_PROJECTILE = 4,
+        LEVEL = 5
     }
 }
