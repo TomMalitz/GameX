@@ -49,8 +49,10 @@
   <ItemGroup>
     <Folder Include="Assets\Bosses\" />
     <Folder Include="Assets\Enemies\Test\" />
+    <Folder Include="Assets\Player\Weapons\WaterCannon\Projectiles\HalfCharge\" />
+    <Folder Include="Assets\Player\Weapons\WaterCannon\Projectiles\FullCharge\" />
+    <Folder Include="Assets\Player\Weapons\WaterCannon\Projectiles\Normal\" />
     <Folder Include="Assets\UI\" />
     <Folder Include="Assets\Player\Weapons\WaterCannon\Movement\" />
-    <Folder Include="Assets\Player\Weapons\WaterCannon\Projectiles\" />
   </ItemGroup>
 </Project>

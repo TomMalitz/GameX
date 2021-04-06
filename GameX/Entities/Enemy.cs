@@ -16,6 +16,8 @@ namespace GameX.Entities
         BoxCollider _collider;
         TiledMapMover _mover;
 
+        public float Health = 100f;
+
         private TmxMap _sceneTileMap;
         TiledMapMover.CollisionState _collisionState = new TiledMapMover.CollisionState();
         Vector2 _velocity = new Vector2(0,0);
@@ -29,18 +31,28 @@ namespace GameX.Entities
         {
             base.OnAddedToScene();
 
+            this.SetTag((int)EntityTags.ENEMY);
+
             Debug.Log("ENEMY ADDED TO SCENE");
 
             _mover = this.AddComponent(new TiledMapMover(_sceneTileMap.GetLayer<TmxLayer>("main")));
 
             _collider = this.AddComponent(new BoxCollider(32, 32));
-            _collider.IsTrigger = true;
             Flags.SetFlagExclusive(ref _collider.PhysicsLayer, (int)PhysicsLayers.ENEMIES);
 
             _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, "Assets/Enemies/Test/atlas");
             _animator.RenderLayer = (int)RenderLayers.ENEMIES;
             this.AddComponent<SpriteAnimator>(_animator);
             _animator.Play("idle", SpriteAnimator.LoopMode.ClampForever);
+        }
+
+        public void TakeDamage(float damage)
+        {
+            Health -= damage;
+            if(Health <= 0)
+            {
+                this.Destroy();
+            }
         }
 
         public override void Update()

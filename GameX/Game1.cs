@@ -45,7 +45,7 @@ namespace GameX
             //IsFixedTimeStep = true;
 
             //Core.DefaultSamplerState = SamplerState.PointClamp;
-            Core.DebugRenderEnabled = true;
+            //Core.DebugRenderEnabled = true;
 
         }
     }

@@ -13,23 +13,25 @@ using GameX.Utils;
 
 namespace GameX.Entities
 {
-    class Player : Entity, ITriggerListener
+    class Player : Entity
     {
 
-        // Params
         public Vector2 projectileLocationOffset = new Vector2(0,0);
         public float MoveSpeed = 125f;
-        public float DashSpeed = 350f;
+        public float DashSpeed = 300f;
         public float WallSlideSpeed = 100f;
         public float MaxGroundDashTime = 0.50f;
         public float MaxAirDashTime = 0.35f;
         public float Gravity = 1000f;
         public float TerminalVelocity = 350f;
         public float JumpHeight = 75f;
-        public float halfChargeTime = 1f;
-        public float fullChargeTime = 2f;
-        public float projectileSpeed = 350f;
-        public float attackInputLockTime = 0.10f;
+        public float HalfChargeTime = 0.75f;
+        public float FullChargeTime = 1.50f;
+        public float ProjectileSpeed = 400f;
+        public float AttackInputLockTime = 0.10f;
+        public float NoChargeDamage = 10f;
+        public float HalfChargeDamage = 50f;
+        public float FullChargeDamage = 100f;
 
         // Components
         SpriteAnimator _animator;
@@ -40,7 +42,6 @@ namespace GameX.Entities
 
         // Local state
         TiledMapMover.CollisionState _collisionState = new TiledMapMover.CollisionState();
-        ColliderTriggerHelper _triggerHelper;
         Vector2 _velocity;
         AnimationInstruction _lastAnimation;
         AnimationInstruction _currentAnimation;
@@ -85,6 +86,8 @@ namespace GameX.Entities
             public int startFrame = 0;
         }
 
+        #region SETUP
+
         public Player(TmxMap sceneTileMap)
         {
             _sceneTileMap = sceneTileMap;
@@ -117,11 +120,6 @@ namespace GameX.Entities
 
             BoxCollider boxCollider = new BoxCollider(-width / 2 + widthOffset, -height / 2 + heightOffset, width, height);
             _collider = this.AddComponent(boxCollider);
-            _collider.IsTrigger = true;
-
-            _triggerHelper = new ColliderTriggerHelper(this);
-
-            Flags.SetFlagExclusive(ref _collider.CollidesWithLayers, (int)PhysicsLayers.ENEMIES);
             Flags.SetFlagExclusive(ref _collider.PhysicsLayer, (int)PhysicsLayers.PLAYER);
         }
 
@@ -137,13 +135,13 @@ namespace GameX.Entities
             fpsData.Add("idle_shoot_strong", 18);
 
             _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, "Assets/Player/atlas", fpsData);
+            _animator.RenderLayer = (int)RenderLayers.PLAYER;
             this.AddComponent<SpriteAnimator>(_animator);
 
             _lastAnimation = new AnimationInstruction();
             _currentAnimation = new AnimationInstruction();
             _animator.Play("idle");
         }
-
 
         private void SetupInput()
         {
@@ -176,15 +174,40 @@ namespace GameX.Entities
             _weaponChangeInput.Nodes.Add(new VirtualButton.KeyboardKey(Keys.E));
         }
 
+        #endregion
+
         public override void Update()
         {
             base.Update();
 
             HandleMovement();
-            _triggerHelper.Update();
 
             HandleWeaponInput();
 
+            HandleAnimations();
+
+            CheckForCollisions();
+        }
+
+        #region COLLISIONS
+        private void CheckForCollisions()
+        {
+            HashSet<Collider> neighborColliders = Physics.BoxcastBroadphaseExcludingSelf(_collider, 1 << (int)PhysicsLayers.ENEMIES);
+
+            foreach (Collider neighborCollider in neighborColliders)
+            {
+                if (_collider.Overlaps(neighborCollider))
+                {
+                    Debug.Log("OVERLAP WITH ENEMY");
+                }
+            }
+        }
+        #endregion
+
+        #region ANIMATIONS
+
+        private void HandleAnimations()
+        {
             _lastAnimation = _currentAnimation;
 
             /** Proceed to next animation if:
@@ -196,7 +219,7 @@ namespace GameX.Entities
                 && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
                 || CanNextAnimationInterruptLast(GetAnimationInstruction(), _lastAnimation))
             {
-       
+
                 _currentAnimation = GetAnimationInstruction();
 
                 if (_currentAnimation != null && !_animator.IsAnimationActive(_currentAnimation.name))
@@ -210,11 +233,8 @@ namespace GameX.Entities
                         _animator.Play(_currentAnimation.name, _currentAnimation.loopMode);
                     }
                 }
-
             }
         }
-
-        #region ANIMATIONS
 
         private bool CanNextAnimationInterruptLast(AnimationInstruction nextAnimation, AnimationInstruction lastAnimation)
         {
@@ -354,18 +374,18 @@ namespace GameX.Entities
                 _attackLockTime += Time.DeltaTime;
             }
 
-            if(_attackLockTime >= attackInputLockTime)
+            if(_attackLockTime >= AttackInputLockTime)
             {
                 _attackLockTime = 0;
                 _canFire = true;
             }
 
-            if(_chargeTime >= halfChargeTime)
+            if(_chargeTime >= HalfChargeTime)
             {
                 _chargeState = ChargeState.HALF;
             }
 
-            if(_chargeTime >= fullChargeTime)
+            if(_chargeTime >= FullChargeTime)
             {
                 _chargeState = ChargeState.FULL;
             }  
@@ -373,27 +393,61 @@ namespace GameX.Entities
 
         private void SpawnProjectile()
         {
-            AnimationInstruction spawnAnimInstruction = new AnimationInstruction();
-            spawnAnimInstruction.name = "normal_projectile";
-            spawnAnimInstruction.loopMode = SpriteAnimator.LoopMode.Loop;
-
-            if (!_chargeState.Equals(ChargeState.NONE))
-            {
-                spawnAnimInstruction.name = "half_projectile";
-                spawnAnimInstruction.loopMode = SpriteAnimator.LoopMode.ClampForever;
-            }
-
-            // spawn projectile
-            float speed = _facingRight ? projectileSpeed : -projectileSpeed;
             Projectile projectile = new Projectile(Scene,
                 this.Position + GetProjectileOffsetForAnimation(_currentAnimation.name),
-                new Vector2(speed, 0),
                 PhysicsLayers.PLAYER_PROJECTILE,
-                new Vector2(9, 9),
-                "Assets/Player/Weapons/WaterCannon/Projectiles/atlas",
-                spawnAnimInstruction.name,
-                spawnAnimInstruction.loopMode);
+                PhysicsLayers.ENEMIES,
+                GetColliderDimensionsForChargeState(_chargeState),
+                GetAtlasPathForChargeState(_chargeState));
+            float xVelocity = _facingRight ? ProjectileSpeed : -ProjectileSpeed;
+            projectile.Velocity = new Vector2(xVelocity, 0);
+            projectile.Damage = GetDamageChargeState(_chargeState);
+            if(!_chargeState.Equals(ChargeState.NONE)) projectile.ContinuesAfterKill = true;
+        }
 
+        private string GetAtlasPathForChargeState(ChargeState chareState)
+        {
+            switch(chareState)
+            {
+                case ChargeState.NONE:
+                    return "Assets/Player/Weapons/WaterCannon/Projectiles/Normal/atlas";
+                case ChargeState.HALF:
+                    return "Assets/Player/Weapons/WaterCannon/Projectiles/HalfCharge/atlas";
+                case ChargeState.FULL:
+                    return "Assets/Player/Weapons/WaterCannon/Projectiles/FullCharge/atlas";
+                default:
+                    return "Assets/Player/Weapons/WaterCannon/Projectiles/Normal/atlas";
+            }
+        }
+
+        private float GetDamageChargeState(ChargeState chareState)
+        {
+            switch (chareState)
+            {
+                case ChargeState.NONE:
+                    return NoChargeDamage;
+                case ChargeState.HALF:
+                    return HalfChargeDamage;
+                case ChargeState.FULL:
+                    return FullChargeDamage;
+                default:
+                    return NoChargeDamage;
+            }
+        }
+
+        private Vector2 GetColliderDimensionsForChargeState(ChargeState chareState)
+        {
+            switch (chareState)
+            {
+                case ChargeState.NONE:
+                    return new Vector2(9, 9);
+                case ChargeState.HALF:
+                    return new Vector2(16, 16);
+                case ChargeState.FULL:
+                    return new Vector2(32, 32);
+                default:
+                    return new Vector2(9, 9);
+            }
         }
 
         private Vector2 GetProjectileOffsetForAnimation(string animationName)
@@ -509,7 +563,7 @@ namespace GameX.Entities
             // Vertical Movement
 
             // start jumping
-            if ((_canJump || _wallSliding) && !_jumping && _jumpInput.IsPressed)
+            if (((_canJump && _collisionState.Below) || _wallSliding) && !_jumping && _jumpInput.IsPressed)
             {
                 _velocity.Y = -Mathf.Sqrt(2f * JumpHeight * Gravity);
                 _jumping = true;
@@ -586,16 +640,6 @@ namespace GameX.Entities
         }
 
         #endregion
-
-        void ITriggerListener.OnTriggerEnter(Collider other, Collider self)
-        {
-            Debug.Log("PLAYER TRIGGER ENTER");
-        }
-
-        void ITriggerListener.OnTriggerExit(Collider other, Collider self)
-        {
-            Debug.Log("PLAYER TRIGGER EXIT");
-        }
 
     }
 }
