@@ -466,9 +466,9 @@ namespace GameX.Entities
             }
         }
 
-        private float GetDamageChargeState(ChargeState chareState)
+        private float GetDamageForChargeState(ChargeState chargeState)
         {
-            switch (chareState)
+            switch (chargeState)
             {
                 case ChargeState.NONE:
                     return NoChargeDamage;
@@ -481,9 +481,9 @@ namespace GameX.Entities
             }
         }
 
-        private Vector2 GetColliderDimensionsForChargeState(ChargeState chareState)
+        private Vector2 GetColliderDimensionsForChargeState(ChargeState chargeState)
         {
-            switch (chareState)
+            switch (chargeState)
             {
                 case ChargeState.NONE:
                     return new Vector2(9, 9);
