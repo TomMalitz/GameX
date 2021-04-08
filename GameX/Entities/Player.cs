@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Textures;
 using Nez.Sprites;
@@ -32,6 +33,9 @@ namespace GameX.Entities
         public float NoChargeDamage = 10f;
         public float HalfChargeDamage = 50f;
         public float FullChargeDamage = 100f;
+        public float ChargeBlinkSpeed = 20f; // The rate at which the charge blink effect will display
+        public float ChargeEffectDelayTime = 0.5f; // The amount of time the attack button needs to be held before player starts blinking
+        public int BlinkColorAlpha = 125; // The alpha amount the charge blink effect will "blink" to
 
         // Components
         SpriteAnimator _animator;
@@ -45,6 +49,7 @@ namespace GameX.Entities
         Vector2 _velocity;
         AnimationInstruction _lastAnimation;
         AnimationInstruction _currentAnimation;
+        Color _chargeBlinkColor = new Color(52,155,235,0);
         ChargeState _chargeState;
         bool _facingRight = true;
         bool _jumping = false;
@@ -61,6 +66,7 @@ namespace GameX.Entities
         float _airDashTime = 0;
         float _wallJumpDashTime = 0;
         float _attackLockTime = 0;
+        float _chargeBlinkTime = 0;
 
         // Input Axis
         VirtualIntegerAxis _xAxisInput;
@@ -136,6 +142,11 @@ namespace GameX.Entities
 
             _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, "Assets/Player/atlas", fpsData);
             _animator.RenderLayer = (int)RenderLayers.PLAYER;
+
+            SpriteBlinkEffect blinkEffect = new SpriteBlinkEffect();
+            blinkEffect.BlinkColor = _chargeBlinkColor;
+            _animator.Material = new Material(BlendState.NonPremultiplied, blinkEffect);
+
             this.AddComponent<SpriteAnimator>(_animator);
 
             _lastAnimation = new AnimationInstruction();
@@ -181,8 +192,9 @@ namespace GameX.Entities
             base.Update();
 
             HandleMovement();
-
+         
             HandleWeaponInput();
+            HandleChargeBlink();
 
             HandleAnimations();
 
@@ -341,6 +353,40 @@ namespace GameX.Entities
         #endregion
 
         #region WEAPONS
+
+        private void HandleChargeBlink()
+        {
+            if (_chargingShot && _chargeTime > ChargeEffectDelayTime)
+            {
+                _chargeBlinkTime += Time.DeltaTime;
+                if (_chargeBlinkTime >= (1 / ChargeBlinkSpeed) && _chargeBlinkColor.A == Convert.ToByte(0))
+                {
+                    _chargeBlinkColor.A = Convert.ToByte(BlinkColorAlpha);
+                    _chargeBlinkTime = 0;
+                    UpdateBlinkMaterial();
+                }
+                if (_chargeBlinkTime >= (1 / ChargeBlinkSpeed) && _chargeBlinkColor.A == Convert.ToByte(BlinkColorAlpha))
+                {
+                    _chargeBlinkColor.A = Convert.ToByte(0);
+                    _chargeBlinkTime = 0;
+                    UpdateBlinkMaterial();
+                }
+            }
+            if(!_chargingShot && _chargeBlinkColor.A != Convert.ToByte(0))
+            {
+                _chargeBlinkColor.A = Convert.ToByte(0);
+                _chargeBlinkTime = 0;
+                UpdateBlinkMaterial();
+            }
+        }
+
+        private void UpdateBlinkMaterial()
+        {
+            SpriteBlinkEffect blinkEffect = new SpriteBlinkEffect();
+            blinkEffect.BlinkColor = _chargeBlinkColor;
+            _animator.Material.Effect = blinkEffect;
+        }
+
         private void HandleWeaponInput()
         {
             if(_attackInput.IsDown)

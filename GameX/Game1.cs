@@ -21,7 +21,7 @@ namespace GameX
 
             base.Initialize();
 
-            Scene testScene = Scene.CreateWithDefaultRenderer(Color.CornflowerBlue);
+            Scene testScene = Scene.CreateWithDefaultRenderer(Color.DarkGray);
             testScene.SetDesignResolution(512, 288, Scene.SceneResolutionPolicy.NoBorderPixelPerfect);
             //testScene.SetDesignResolution(1280, 720, Scene.SceneResolutionPolicy.NoBorderPixelPerfect);
 
