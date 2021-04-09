@@ -17,7 +17,8 @@ namespace GameX.Entities
     class Player : Entity
     {
 
-        public Vector2 projectileLocationOffset = new Vector2(0,0);
+        public Vector2 DamageImpulseVector = new Vector2(100f, -200f);
+        public float Health = 100f;
         public float MoveSpeed = 125f;
         public float DashSpeed = 300f;
         public float WallSlideSpeed = 100f;
@@ -35,7 +36,8 @@ namespace GameX.Entities
         public float FullChargeDamage = 100f;
         public float ChargeBlinkSpeed = 20f; // The rate at which the charge blink effect will display
         public float ChargeEffectDelayTime = 0.5f; // The amount of time the attack button needs to be held before player starts blinking
-        public int BlinkColorAlpha = 125; // The alpha amount the charge blink effect will "blink" to
+        public float DamageLockTime = 0.75f; // The time that the player is locked from input while the damage animation plays
+        public int BlinkColorAlpha = 100; // The alpha amount the charge blink effect will "blink" to
 
         // Components
         SpriteAnimator _animator;
@@ -49,7 +51,7 @@ namespace GameX.Entities
         Vector2 _velocity;
         AnimationInstruction _lastAnimation;
         AnimationInstruction _currentAnimation;
-        Color _chargeBlinkColor = new Color(52,155,235,0);
+        Color _chargeBlinkColor = new Color(1,1,1,0);
         ChargeState _chargeState;
         bool _facingRight = true;
         bool _jumping = false;
@@ -61,12 +63,15 @@ namespace GameX.Entities
         bool _canJump = false;
         bool _chargingShot = false;
         bool _canFire = false;
+        bool _damageLocked = false;
+        bool _damagedThisFrame = false;
         float _chargeTime = 0;
         float _groundDashTime = 0;
         float _airDashTime = 0;
         float _wallJumpDashTime = 0;
         float _attackLockTime = 0;
         float _chargeBlinkTime = 0;
+        float _damageLockTime = 0;
 
         // Input Axis
         VirtualIntegerAxis _xAxisInput;
@@ -194,7 +199,6 @@ namespace GameX.Entities
             HandleMovement();
          
             HandleWeaponInput();
-            HandleChargeBlink();
 
             HandleAnimations();
 
@@ -204,16 +208,42 @@ namespace GameX.Entities
         #region COLLISIONS
         private void CheckForCollisions()
         {
-            HashSet<Collider> neighborColliders = Physics.BoxcastBroadphaseExcludingSelf(_collider, 1 << (int)PhysicsLayers.ENEMIES);
-
-            foreach (Collider neighborCollider in neighborColliders)
+            if (!_damageLocked)
             {
-                if (_collider.Overlaps(neighborCollider))
+                HashSet<Collider> neighborColliders = Physics.BoxcastBroadphaseExcludingSelf(_collider, 1 << (int)PhysicsLayers.ENEMIES);
+
+                foreach (Collider neighborCollider in neighborColliders)
                 {
-                    Debug.Log("OVERLAP WITH ENEMY");
+                    if (_collider.Overlaps(neighborCollider))
+                    {
+                        _damageLocked = true;
+                        _damagedThisFrame = true;
+                        TakeDamage(10f);
+                    }
+                }
+            } else
+            {
+                _damageLockTime += Time.DeltaTime;
+                _damagedThisFrame = false;
+                if (_damageLockTime >= DamageLockTime)
+                {
+                    _damageLockTime = 0;
+                    _damageLocked = false;
                 }
             }
         }
+
+        private void TakeDamage(float damage)
+        {
+            Health -= damage;
+            if(Health <= 0)
+            {
+                // TODO play death animation
+                this.Destroy();
+            }
+        }
+
+
         #endregion
 
         #region ANIMATIONS
@@ -223,10 +253,9 @@ namespace GameX.Entities
             _lastAnimation = _currentAnimation;
 
             /** Proceed to next animation if:
-             * last animation was not Once
              * last animation was Once and is completed
              * next animation can interrupt last animation */
-            if (!_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once) ||
+            if (
                 (_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once)
                 && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
                 || CanNextAnimationInterruptLast(GetAnimationInstruction(), _lastAnimation))
@@ -250,6 +279,8 @@ namespace GameX.Entities
 
         private bool CanNextAnimationInterruptLast(AnimationInstruction nextAnimation, AnimationInstruction lastAnimation)
         {
+
+            if (lastAnimation.name == "damaged" && _damageLocked) return false;
             if (lastAnimation.name == "grounded" && nextAnimation.name == "idle") return false;
             if (lastAnimation.name == "idle_shoot_strong" && nextAnimation.name == "idle") return false;
             if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run") return false;
@@ -347,6 +378,12 @@ namespace GameX.Entities
                 animation.startFrame = _animator.CurrentFrame;
             }
 
+            if(_damageLocked)
+            {
+                animation.name = "damaged";
+                animation.loopMode = SpriteAnimator.LoopMode.Loop;
+            }
+
             return animation;
         }
 
@@ -389,7 +426,9 @@ namespace GameX.Entities
 
         private void HandleWeaponInput()
         {
-            if(_attackInput.IsDown)
+            HandleChargeBlink();
+
+            if (_attackInput.IsDown)
             {
                 _chargeTime += Time.DeltaTime;
                 _chargingShot = true;
@@ -439,16 +478,19 @@ namespace GameX.Entities
 
         private void SpawnProjectile()
         {
-            Projectile projectile = new Projectile(Scene,
-                this.Position + GetProjectileOffsetForAnimation(_currentAnimation.name),
-                PhysicsLayers.PLAYER_PROJECTILE,
-                PhysicsLayers.ENEMIES,
-                GetColliderDimensionsForChargeState(_chargeState),
-                GetAtlasPathForChargeState(_chargeState));
-            float xVelocity = _facingRight ? ProjectileSpeed : -ProjectileSpeed;
-            projectile.Velocity = new Vector2(xVelocity, 0);
-            projectile.Damage = GetDamageChargeState(_chargeState);
-            if(!_chargeState.Equals(ChargeState.NONE)) projectile.ContinuesAfterKill = true;
+            if (!_damageLocked)
+            {
+                Projectile projectile = new Projectile(Scene,
+                    this.Position + GetProjectileOffsetForAnimation(_currentAnimation.name),
+                    PhysicsLayers.PLAYER_PROJECTILE,
+                    PhysicsLayers.ENEMIES,
+                    GetColliderDimensionsForChargeState(_chargeState),
+                    GetAtlasPathForChargeState(_chargeState));
+                float xVelocity = _facingRight ? ProjectileSpeed : -ProjectileSpeed;
+                projectile.Velocity = new Vector2(xVelocity, 0);
+                projectile.Damage = GetDamageForChargeState(_chargeState);
+                if (!_chargeState.Equals(ChargeState.NONE)) projectile.ContinuesAfterKill = true;
+            }
         }
 
         private string GetAtlasPathForChargeState(ChargeState chareState)
@@ -517,139 +559,157 @@ namespace GameX.Entities
         private void HandleMovement()
         {
 
-            // Horizontal movement input
-            Vector2 moveDir = new Vector2(_xAxisInput.Value, 0);
-
-            bool xInputPresent = Math.Abs(moveDir.X) > 0;
-
-            // start ground dash
-            if ((_collisionState.Below || _wallSliding) && (_dashInput.IsPressed || _groundDashing))
+            if (!_damageLocked)
             {
-                _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
-                _groundDashing = true;
-                _groundDashTime += Time.DeltaTime;
-            }
+                // Horizontal movement input
+                Vector2 moveDir = new Vector2(_xAxisInput.Value, 0);
 
-            // start air dash
-            if (!_collisionState.Below && !_wallSliding && _canAirDash && (_dashInput.IsPressed || _airDashing))
-            {
-                if (_dashInput.IsPressed)
+                bool xInputPresent = Math.Abs(moveDir.X) > 0;
+
+                // start ground dash
+                if ((_collisionState.Below || _wallSliding) && (_dashInput.IsPressed || _groundDashing))
                 {
                     _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
-                }
-                _airDashing = true;
-                _airDashTime += Time.DeltaTime;
-                _velocity.Y = 0;
-            }
-
-            // end ground dash when grounded or ground dash time has expired
-            if (_collisionState.Below && (!_dashInput.IsDown || _groundDashTime >= MaxGroundDashTime))
-            {
-                _groundDashing = false;
-                _groundDashTime = 0;
-            }
-
-            // end air dash with time expiration
-            if (!_collisionState.Below && _airDashTime >= MaxAirDashTime)
-            {
-                _canAirDash = false;
-                _airDashing = false;
-                _airDashTime = 0;
-            }
-
-            // with x input
-            if (xInputPresent)
-            {
-                // dont change direction with air dodge
-                if (!_airDashing)
-                {
-                    _facingRight = moveDir.X > 0;
-                    _animator.FlipX = !_facingRight;
+                    _groundDashing = true;
+                    _groundDashTime += Time.DeltaTime;
                 }
 
-                // end ground dash if x input sign changes when grounded
-                if (!_airDashing && _collisionState.Below && Math.Sign(_velocity.X) != Math.Sign(moveDir.X))
+                // start air dash
+                if (!_collisionState.Below && !_wallSliding && _canAirDash && (_dashInput.IsPressed || _airDashing))
                 {
-                    _groundDashing = false;
-                    _groundDashTime = 0;
-                }
-                
-                // allow ground dash jump to change direction mid-air
-                if(_dashJumping)
-                {
-                    _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
-                    _wallJumpDashTime += Time.DeltaTime;
-                }
-
-                // normal speed if no dashing or dash jumping
-                if (!_airDashing && !_groundDashing && !_dashJumping)
-                {
-                    _velocity.X = _facingRight ? MoveSpeed : -MoveSpeed;
-                }
-            }
-
-            // no x input
-            else
-            {
-                // not dashing and no x input - stop moving (idle)
-                if (!_groundDashing && !_airDashing)
-                {
-                    _velocity.X = 0;
-                }
-
-                // Stop dash jump momentarily if there is no x input
-                if(_groundDashing && !_collisionState.Below)
-                {
-                    _velocity.X = 0;
-                    _groundDashing = false;
-                    _groundDashTime = 0;
-                }
-            }
-
-            // Vertical Movement
-
-            // start jumping
-            if (((_canJump && _collisionState.Below) || _wallSliding) && !_jumping && _jumpInput.IsPressed)
-            {
-                _velocity.Y = -Mathf.Sqrt(2f * JumpHeight * Gravity);
-                _jumping = true;
-                _canJump = false;
-
-                if (Math.Abs(_velocity.X) == DashSpeed)
-                {
-                    _dashJumping = true;
-                }
-            }
-
-            // end jumping
-            if (_jumping && _jumpInput.IsReleased)
-            {
-                // cancel upward velocity if we are going up
-                if (_velocity.Y < 0)
-                {
+                    if (_dashInput.IsPressed)
+                    {
+                        _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
+                    }
+                    _airDashing = true;
+                    _airDashTime += Time.DeltaTime;
                     _velocity.Y = 0;
                 }
-                _jumping = false;
+
+                // end ground dash when grounded or ground dash time has expired
+                if (_collisionState.Below && (!_dashInput.IsDown || _groundDashTime >= MaxGroundDashTime))
+                {
+                    _groundDashing = false;
+                    _groundDashTime = 0;
+                }
+
+                // end air dash with time expiration
+                if (!_collisionState.Below && _airDashTime >= MaxAirDashTime)
+                {
+                    _canAirDash = false;
+                    _airDashing = false;
+                    _airDashTime = 0;
+                }
+
+                // with x input
+                if (xInputPresent)
+                {
+                    // dont change direction with air dodge
+                    if (!_airDashing)
+                    {
+                        _facingRight = moveDir.X > 0;
+                        _animator.FlipX = !_facingRight;
+                    }
+
+                    // end ground dash if x input sign changes when grounded
+                    if (!_airDashing && _collisionState.Below && Math.Sign(_velocity.X) != Math.Sign(moveDir.X))
+                    {
+                        _groundDashing = false;
+                        _groundDashTime = 0;
+                    }
+
+                    // allow ground dash jump to change direction mid-air
+                    if (_dashJumping)
+                    {
+                        _velocity.X = _facingRight ? DashSpeed : -DashSpeed;
+                        _wallJumpDashTime += Time.DeltaTime;
+                    }
+
+                    // normal speed if no dashing or dash jumping
+                    if (!_airDashing && !_groundDashing && !_dashJumping)
+                    {
+                        _velocity.X = _facingRight ? MoveSpeed : -MoveSpeed;
+                    }
+                }
+
+                // no x input
+                else
+                {
+                    // not dashing and no x input - stop moving (idle)
+                    if (!_groundDashing && !_airDashing)
+                    {
+                        _velocity.X = 0;
+                    }
+
+                    // Stop dash jump momentarily if there is no x input
+                    if (_groundDashing && !_collisionState.Below)
+                    {
+                        _velocity.X = 0;
+                        _groundDashing = false;
+                        _groundDashTime = 0;
+                    }
+                }
+
+                // Vertical Movement
+
+                // start jumping
+                if (((_canJump && _collisionState.Below) || _wallSliding) && !_jumping && _jumpInput.IsPressed)
+                {
+                    _velocity.Y = -Mathf.Sqrt(2f * JumpHeight * Gravity);
+                    _jumping = true;
+                    _canJump = false;
+
+                    if (Math.Abs(_velocity.X) == DashSpeed)
+                    {
+                        _dashJumping = true;
+                    }
+                }
+
+                // end jumping
+                if (_jumping && _jumpInput.IsReleased)
+                {
+                    // cancel upward velocity if we are going up
+                    if (_velocity.Y < 0)
+                    {
+                        _velocity.Y = 0;
+                    }
+                    _jumping = false;
+                }
+
+                // start wall sliding 
+                if (!_jumping && !_collisionState.Below && _velocity.Y > 0 && (_collisionState.Right || _collisionState.Left))
+                {
+                    _wallSliding = true;
+                    _velocity.Y = WallSlideSpeed;
+                }
+
+                // stop wall sliding
+                else
+                {
+                    _wallSliding = false;
+                }
+
+                // Apply gravity and clamp to terminal velocity if not air dashing or wall sliding
+                if (!_airDashing && !_wallSliding)
+                {
+                    _velocity.Y += Gravity * Time.DeltaTime;
+                    _velocity.Y = Mathf.Clamp(_velocity.Y, _velocity.Y, TerminalVelocity);
+                }
             }
 
-            // start wall sliding 
-            if (!_jumping && !_collisionState.Below && _velocity.Y > 0 && (_collisionState.Right || _collisionState.Left))
+            // Apply damage vector when damage locked
+            if(_damageLocked)
             {
-                _wallSliding = true;
-                _velocity.Y = WallSlideSpeed;
-            }
-
-            // stop wall sliding
-            else
-            {
-                _wallSliding = false;
-            }
-
-            // Apply gravity and clamp to terminal velocity if not air dashing or wall sliding
-            if (!_airDashing && !_wallSliding)
-            {
-                _velocity.Y += Gravity * Time.DeltaTime;
-                _velocity.Y = Mathf.Clamp(_velocity.Y, _velocity.Y, TerminalVelocity);
+                float damageXDirection = _facingRight ? -1 : 1;
+                _velocity.X = damageXDirection * DamageImpulseVector.X;
+                if (_damagedThisFrame)
+                {
+                    _velocity.Y = DamageImpulseVector.Y;
+                } else
+                {
+                    _velocity.Y += Gravity * Time.DeltaTime;
+                    _velocity.Y = Mathf.Clamp(_velocity.Y, _velocity.Y, TerminalVelocity);
+                }
             }
 
             _mover.Move(_velocity * Time.DeltaTime, _collider, _collisionState);
