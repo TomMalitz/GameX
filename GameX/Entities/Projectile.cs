@@ -67,6 +67,7 @@ namespace GameX.Entities
             if(HasStartAnim)
             {
                 _animator.Play("start", SpriteAnimator.LoopMode.Once);
+                _animator.OnAnimationCompletedEvent += new Action<string>(HandleAnimationCompleted);
             } else
             {
                 _animator.Play("live", LiveLoopMode);
@@ -96,19 +97,6 @@ namespace GameX.Entities
             {
                 CheckForCollisions();
             }
-
-            // switch to live anim after start anim has completed
-            if (HasStartAnim && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
-            {
-                _animator.Play("live", LiveLoopMode);
-            }
-
-            // destroy projectile after hit anim has completed
-            if (HasHitAnim && _hitTarget && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
-            {
-                this.Destroy();
-            }
-
         }
 
         private void CheckForCollisions()
@@ -119,8 +107,7 @@ namespace GameX.Entities
             {
                 if (_collider.Overlaps(neighborCollider))
                 {
-                    Enemy enemyEntity = neighborCollider.Entity as Enemy;
-                    if (enemyEntity != null)
+                    if (neighborCollider.Entity is Enemy enemyEntity)
                     {
                         DamageEnemy(enemyEntity);
                     }
@@ -138,8 +125,16 @@ namespace GameX.Entities
             }
             if (HasHitAnim)
             {
-                _animator.Play("hit", SpriteAnimator.LoopMode.Once);
+                Velocity = new Vector2(0, 0); // stop the projectile
+                _animator.Play("hit", SpriteAnimator.LoopMode.ClampForever);
+                _animator.OnAnimationCompletedEvent += new Action<string>(HandleAnimationCompleted);
             }
+        }
+
+        private void HandleAnimationCompleted(string animName)
+        {
+            if (animName == "hit") this.Destroy(); // destroy projectile after hit anim completes
+            else if(animName == "start") _animator.Play("live", LiveLoopMode); // switch to live anim after start finished
         }
 
         private void DamageEnemy(Enemy enemy)

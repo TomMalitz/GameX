@@ -3,7 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.Tiled;
+using Nez.Textures;
 using GameX.Entities;
+using GameX.Constants;
 
 namespace GameX
 {
@@ -27,7 +29,8 @@ namespace GameX
 
             TmxMap testLevel = testScene.Content.LoadTiledMap("Assets/Levels/Test/test.tmx");
             Entity tiledEntity = testScene.CreateEntity("tiled-level");
-            tiledEntity.AddComponent(new TiledMapRenderer(testLevel, "main"));
+            TiledMapRenderer tiledMapRenderer = tiledEntity.AddComponent(new TiledMapRenderer(testLevel, "main"));
+            tiledMapRenderer.RenderLayer = (int)RenderLayers.LEVEL;
 
             Player player = new Player(testLevel);
             player.AttachToScene(testScene);

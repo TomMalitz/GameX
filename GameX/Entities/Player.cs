@@ -17,16 +17,32 @@ namespace GameX.Entities
     class Player : Entity
     {
 
+        // Damage
         public Vector2 DamageImpulseVector = new Vector2(100f, -200f);
+        public float DamageLockTime = 0.5f; // The time that the player is locked from input while the damage animation plays
+        public float DamageProtectionLockTime = 1f;
+        public Color DamageProtectionBlinkColor = new Color(255, 255, 255);
+        public float DamageProtectionBlinkSpeed = 10f;
+
+        // Animation
+        public int BlinkColorAlpha = 100; // The alpha amount the charge blink effect will "blink" to
+
+        // Stats
         public float Health = 100f;
+
+        // Movement
         public float MoveSpeed = 125f;
         public float DashSpeed = 300f;
         public float WallSlideSpeed = 100f;
         public float MaxGroundDashTime = 0.50f;
         public float MaxAirDashTime = 0.35f;
         public float Gravity = 1000f;
-        public float TerminalVelocity = 350f;
+        public float TerminalVelocity = 400f;
         public float JumpHeight = 75f;
+
+        // Weapons
+        Dictionary<string, int> _projectileFpsData = new Dictionary<string, int>();
+        public Color ChargeBlinkColor = new Color(1, 1, 1);
         public float HalfChargeTime = 0.75f;
         public float FullChargeTime = 1.50f;
         public float ProjectileSpeed = 400f;
@@ -36,8 +52,7 @@ namespace GameX.Entities
         public float FullChargeDamage = 100f;
         public float ChargeBlinkSpeed = 20f; // The rate at which the charge blink effect will display
         public float ChargeEffectDelayTime = 0.5f; // The amount of time the attack button needs to be held before player starts blinking
-        public float DamageLockTime = 0.75f; // The time that the player is locked from input while the damage animation plays
-        public int BlinkColorAlpha = 100; // The alpha amount the charge blink effect will "blink" to
+        public float RunShootTimeWindow = 0.75f; // The time window when running that shoot will be considered "pressed" - for smooth run_shoot anim looping with fire spamming
 
         // Components
         SpriteAnimator _animator;
@@ -51,8 +66,10 @@ namespace GameX.Entities
         Vector2 _velocity;
         AnimationInstruction _lastAnimation;
         AnimationInstruction _currentAnimation;
-        Color _chargeBlinkColor = new Color(1,1,1,0);
         ChargeState _chargeState;
+        Color _blinkColor = new Color(1, 1, 1, 0);
+        ITimer _blinkTimer = null;
+
         bool _facingRight = true;
         bool _jumping = false;
         bool _dashJumping = false;
@@ -64,14 +81,14 @@ namespace GameX.Entities
         bool _chargingShot = false;
         bool _canFire = false;
         bool _damageLocked = false;
+        bool _damageProtected = false;
         bool _damagedThisFrame = false;
         float _chargeTime = 0;
         float _groundDashTime = 0;
         float _airDashTime = 0;
         float _wallJumpDashTime = 0;
         float _attackLockTime = 0;
-        float _chargeBlinkTime = 0;
-        float _damageLockTime = 0;
+        float _attackReleaseTime = 0; // amount of time the shoot button has not been pressed
 
         // Input Axis
         VirtualIntegerAxis _xAxisInput;
@@ -124,10 +141,10 @@ namespace GameX.Entities
 
         private void SetCollider()
         {
-            int width = 24;
-            int height = 42;
+            int width = 16;
+            int height = 32;
             int widthOffset = 1;
-            int heightOffset = 2;
+            int heightOffset = 7;
 
             BoxCollider boxCollider = new BoxCollider(-width / 2 + widthOffset, -height / 2 + heightOffset, width, height);
             _collider = this.AddComponent(boxCollider);
@@ -136,6 +153,9 @@ namespace GameX.Entities
 
         private void ConfigureAnimations()
         {
+            // projectile fps data
+            _projectileFpsData.Add("hit", 32);
+
             Dictionary<string, int> fpsData = new Dictionary<string, int>();
             fpsData.Add("idle", 6);
             fpsData.Add("grounded", 25);
@@ -149,7 +169,7 @@ namespace GameX.Entities
             _animator.RenderLayer = (int)RenderLayers.PLAYER;
 
             SpriteBlinkEffect blinkEffect = new SpriteBlinkEffect();
-            blinkEffect.BlinkColor = _chargeBlinkColor;
+            blinkEffect.BlinkColor = _blinkColor;
             _animator.Material = new Material(BlendState.NonPremultiplied, blinkEffect);
 
             this.AddComponent<SpriteAnimator>(_animator);
@@ -208,7 +228,7 @@ namespace GameX.Entities
         #region COLLISIONS
         private void CheckForCollisions()
         {
-            if (!_damageLocked)
+            if (!_damageLocked && !_damageProtected)
             {
                 HashSet<Collider> neighborColliders = Physics.BoxcastBroadphaseExcludingSelf(_collider, 1 << (int)PhysicsLayers.ENEMIES);
 
@@ -223,24 +243,41 @@ namespace GameX.Entities
                 }
             } else
             {
-                _damageLockTime += Time.DeltaTime;
                 _damagedThisFrame = false;
-                if (_damageLockTime >= DamageLockTime)
-                {
-                    _damageLockTime = 0;
-                    _damageLocked = false;
-                }
             }
         }
 
         private void TakeDamage(float damage)
         {
+            Core.Schedule(DamageLockTime, this, EndDamageLockAction);
             Health -= damage;
-            if(Health <= 0)
+            if (Health <= 0)
             {
                 // TODO play death animation
                 this.Destroy();
             }
+        }
+
+        private static void EndDamageLockAction(ITimer timer)
+        {
+            Player player = timer.GetContext<Player>();
+            player._damageLocked = false;
+
+            player.StartDamageProtectionLock();
+        }
+
+        private void StartDamageProtectionLock()
+        {
+            _damageProtected = true;
+            StartBlinkTimer(DamageProtectionBlinkColor, DamageProtectionBlinkSpeed);
+            Core.Schedule(DamageProtectionLockTime, this, EndDamageProtectionLockAction);
+        }
+
+        private static void EndDamageProtectionLockAction(ITimer timer)
+        {
+            Player player = timer.GetContext<Player>();
+            player._damageProtected = false;
+            player.EndBlinkTimer();
         }
 
 
@@ -248,15 +285,75 @@ namespace GameX.Entities
 
         #region ANIMATIONS
 
+        private static void BlinkAction(ITimer timer)
+        {
+            Player player = timer.GetContext<Player>();
+
+            if (player._blinkColor.A == Convert.ToByte(0))
+            {
+                player._blinkColor.A = Convert.ToByte(player.BlinkColorAlpha);
+            }
+            else if (player._blinkColor.A == Convert.ToByte(player.BlinkColorAlpha))
+            {
+                player._blinkColor.A = Convert.ToByte(0);
+            }
+
+            player.UpdateBlinkMaterial();
+        }
+
+        private void UpdateBlinkMaterial()
+        {
+            SpriteBlinkEffect blinkEffect = new SpriteBlinkEffect();
+            blinkEffect.BlinkColor = _blinkColor;
+
+            _animator.Material.Effect = blinkEffect;
+        }
+
+        private void UpdateBlinkColor(int r, int g, int b)
+        {
+            _blinkColor.R = Convert.ToByte(r);
+            _blinkColor.G = Convert.ToByte(g);
+            _blinkColor.B = Convert.ToByte(b);
+        }
+
+        private void UpdateBlinkColor(Color color)
+        {
+            _blinkColor.R = color.R;
+            _blinkColor.G = color.G;
+            _blinkColor.B = color.B;
+        }
+
+        private void StartBlinkTimer(Color blinkColor, float speed)
+        {
+            if (_blinkTimer != null) EndBlinkTimer();
+            UpdateBlinkColor(blinkColor);
+            _blinkTimer = Core.Schedule(1 / speed, true, this, BlinkAction);
+        }
+
+        private void EndBlinkTimer()
+        {
+            if (_blinkTimer != null) { 
+                _blinkTimer.Stop();
+                _blinkTimer = null;
+            }
+
+            _blinkColor.A = Convert.ToByte(0);
+            SpriteBlinkEffect blinkEffect = new SpriteBlinkEffect();
+            blinkEffect.BlinkColor = _blinkColor;
+
+            _animator.Material.Effect = blinkEffect;
+        }
+
         private void HandleAnimations()
         {
             _lastAnimation = _currentAnimation;
 
             /** Proceed to next animation if:
-             * last animation was Once and is completed
+             * last animation was Once or ClampForever and is completed
              * next animation can interrupt last animation */
             if (
-                (_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once)
+                ((_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.ClampForever) 
+                || _lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once))
                 && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
                 || CanNextAnimationInterruptLast(GetAnimationInstruction(), _lastAnimation))
             {
@@ -283,7 +380,7 @@ namespace GameX.Entities
             if (lastAnimation.name == "damaged" && _damageLocked) return false;
             if (lastAnimation.name == "grounded" && nextAnimation.name == "idle") return false;
             if (lastAnimation.name == "idle_shoot_strong" && nextAnimation.name == "idle") return false;
-            if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run") return false;
+            if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run" && _attackReleaseTime < RunShootTimeWindow) return false;
             if (lastAnimation.name == "jump_shoot" && nextAnimation.name == "jump") return false;
             if (lastAnimation.name == "fall_shoot" && nextAnimation.name == "fall") return false;
             return true;
@@ -297,10 +394,10 @@ namespace GameX.Entities
             animation.loopMode = SpriteAnimator.LoopMode.Loop;
 
             // movement animations
-            if(!_collisionState.WasGroundedLastFrame && _collisionState.BecameGroundedThisFrame)
+            if (!_collisionState.WasGroundedLastFrame && _collisionState.BecameGroundedThisFrame)
             {
                 animation.name = "grounded";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
                 return animation;
             }
             if (_velocity.X == 0 && _collisionState.Below)
@@ -341,40 +438,40 @@ namespace GameX.Entities
             }
 
 
+            // action animations
             bool isShooting = _attackInput.IsPressed || (_attackInput.IsReleased && !_chargeState.Equals(ChargeState.NONE));
 
-            // action animations
             if (animation.name == "idle" && isShooting)
             {
                 animation.name = "idle_shoot_strong";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
             if(animation.name == "run" && isShooting)
             {
                 animation.name = "run_shoot";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.loopMode = SpriteAnimator.LoopMode.Loop;
                 animation.startFrame = _animator.CurrentFrame;
             }
 
             if(animation.name == "jump" && isShooting)
             {
                 animation.name = "jump_shoot";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
                 animation.startFrame = _animator.CurrentFrame;
             }
 
             if (animation.name == "fall" && isShooting)
             {
                 animation.name = "fall_shoot";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
                 animation.startFrame = _animator.CurrentFrame;
             }
 
             if (_lastAnimation.name == "jump_shoot" && _velocity.Y > 0)
             {
                 animation.name = "fall_shoot";
-                animation.loopMode = SpriteAnimator.LoopMode.Once;
+                animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
                 animation.startFrame = _animator.CurrentFrame;
             }
 
@@ -391,50 +488,23 @@ namespace GameX.Entities
 
         #region WEAPONS
 
-        private void HandleChargeBlink()
-        {
-            if (_chargingShot && _chargeTime > ChargeEffectDelayTime)
-            {
-                _chargeBlinkTime += Time.DeltaTime;
-                if (_chargeBlinkTime >= (1 / ChargeBlinkSpeed) && _chargeBlinkColor.A == Convert.ToByte(0))
-                {
-                    _chargeBlinkColor.A = Convert.ToByte(BlinkColorAlpha);
-                    _chargeBlinkTime = 0;
-                    UpdateBlinkMaterial();
-                }
-                if (_chargeBlinkTime >= (1 / ChargeBlinkSpeed) && _chargeBlinkColor.A == Convert.ToByte(BlinkColorAlpha))
-                {
-                    _chargeBlinkColor.A = Convert.ToByte(0);
-                    _chargeBlinkTime = 0;
-                    UpdateBlinkMaterial();
-                }
-            }
-            if(!_chargingShot && _chargeBlinkColor.A != Convert.ToByte(0))
-            {
-                _chargeBlinkColor.A = Convert.ToByte(0);
-                _chargeBlinkTime = 0;
-                UpdateBlinkMaterial();
-            }
-        }
-
-        private void UpdateBlinkMaterial()
-        {
-            SpriteBlinkEffect blinkEffect = new SpriteBlinkEffect();
-            blinkEffect.BlinkColor = _chargeBlinkColor;
-            _animator.Material.Effect = blinkEffect;
-        }
-
         private void HandleWeaponInput()
         {
-            HandleChargeBlink();
 
             if (_attackInput.IsDown)
             {
+                if(_blinkTimer == null && _chargeTime >= ChargeEffectDelayTime && !_damageLocked && !_damageProtected)
+                {
+                    StartBlinkTimer(ChargeBlinkColor, ChargeBlinkSpeed);
+                }
                 _chargeTime += Time.DeltaTime;
                 _chargingShot = true;
 
                 // reset charge ready flags
                 _chargeState = ChargeState.NONE;
+
+                // reset shoot release time;
+                _attackReleaseTime = 0;
             }
 
             if(_attackInput.IsReleased)
@@ -446,6 +516,8 @@ namespace GameX.Entities
                 }
                 _chargeTime = 0;
                 _chargingShot = false;
+
+                EndBlinkTimer();
             }
 
             if (_attackInput.IsPressed && _canFire)
@@ -457,6 +529,7 @@ namespace GameX.Entities
             if (!_attackInput.IsDown)
             {
                 _attackLockTime += Time.DeltaTime;
+                if (_attackReleaseTime < RunShootTimeWindow) _attackReleaseTime += Time.DeltaTime;                
             }
 
             if(_attackLockTime >= AttackInputLockTime)
@@ -485,11 +558,13 @@ namespace GameX.Entities
                     PhysicsLayers.PLAYER_PROJECTILE,
                     PhysicsLayers.ENEMIES,
                     GetColliderDimensionsForChargeState(_chargeState),
-                    GetAtlasPathForChargeState(_chargeState));
+                    GetAtlasPathForChargeState(_chargeState),
+                    _projectileFpsData);
                 float xVelocity = _facingRight ? ProjectileSpeed : -ProjectileSpeed;
                 projectile.Velocity = new Vector2(xVelocity, 0);
                 projectile.Damage = GetDamageForChargeState(_chargeState);
-                if (!_chargeState.Equals(ChargeState.NONE)) projectile.ContinuesAfterKill = true;
+                projectile.HasHitAnim = true;
+                if (!_chargeState.Equals(ChargeState.NONE)) projectile.ContinuesAfterKill = true; 
             }
         }
 
@@ -528,13 +603,13 @@ namespace GameX.Entities
             switch (chargeState)
             {
                 case ChargeState.NONE:
-                    return new Vector2(9, 9);
+                    return new Vector2(1, 6);
                 case ChargeState.HALF:
-                    return new Vector2(16, 16);
+                    return new Vector2(1, 9);
                 case ChargeState.FULL:
-                    return new Vector2(32, 32);
+                    return new Vector2(1, 9);
                 default:
-                    return new Vector2(9, 9);
+                    return new Vector2(1, 9);
             }
         }
 
