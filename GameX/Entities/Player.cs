@@ -52,7 +52,7 @@ namespace GameX.Entities
         public float FullChargeDamage = 100f;
         public float ChargeBlinkSpeed = 20f; // The rate at which the charge blink effect will display
         public float ChargeEffectDelayTime = 0.5f; // The amount of time the attack button needs to be held before player starts blinking
-        public float RunShootTimeWindow = 0.75f; // The time window when running that shoot will be considered "pressed" - for smooth run_shoot anim looping with fire spamming
+        public float ShootTimeWindow = 0.30f; // The time window when running that shoot will be considered "pressed" - for smooth run_shoot anim looping with fire spamming
 
         // Components
         SpriteAnimator _animator;
@@ -348,16 +348,8 @@ namespace GameX.Entities
         {
             _lastAnimation = _currentAnimation;
 
-            /** Proceed to next animation if:
-             * last animation was Once or ClampForever and is completed
-             * next animation can interrupt last animation */
-            if (
-                ((_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.ClampForever) 
-                || _lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once))
-                && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
-                || CanNextAnimationInterruptLast(GetAnimationInstruction(), _lastAnimation))
+            if (CanNextAnimationInterruptLast(GetAnimationInstruction(), _lastAnimation))
             {
-
                 _currentAnimation = GetAnimationInstruction();
 
                 if (_currentAnimation != null && !_animator.IsAnimationActive(_currentAnimation.name))
@@ -376,13 +368,29 @@ namespace GameX.Entities
 
         private bool CanNextAnimationInterruptLast(AnimationInstruction nextAnimation, AnimationInstruction lastAnimation)
         {
+            bool isShootingWindowActive = _attackReleaseTime < (ShootTimeWindow) && _chargeState.Equals(ChargeState.NONE);
+            bool animCompleted = _animator.AnimationState.Equals(SpriteAnimator.State.Completed);
 
+            /** Special behavior for certain anim sequences */
             if (lastAnimation.name == "damaged" && _damageLocked) return false;
-            if (lastAnimation.name == "grounded" && nextAnimation.name == "idle") return false;
-            if (lastAnimation.name == "idle_shoot_strong" && nextAnimation.name == "idle") return false;
-            if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run" && _attackReleaseTime < RunShootTimeWindow) return false;
-            if (lastAnimation.name == "jump_shoot" && nextAnimation.name == "jump") return false;
-            if (lastAnimation.name == "fall_shoot" && nextAnimation.name == "fall") return false;
+            if (lastAnimation.name == "grounded" && nextAnimation.name == "idle" && !animCompleted) return false;
+            if (lastAnimation.name == "idle_shoot_strong" && nextAnimation.name == "idle" && !animCompleted) return false;
+            if (lastAnimation.name == "run_shoot" && nextAnimation.name == "run" && isShootingWindowActive) return false;
+            if (lastAnimation.name == "jump_shoot" && nextAnimation.name == "jump" && isShootingWindowActive) return false;
+            if (lastAnimation.name == "fall_shoot" && nextAnimation.name == "fall" && isShootingWindowActive) return false;
+
+            /** Proceed to next animation if:
+             * last animation was Once or ClampForever and is completed
+             */
+            if (
+                (_lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.ClampForever)
+                || _lastAnimation.loopMode.Equals(SpriteAnimator.LoopMode.Once))
+                && _animator.AnimationState.Equals(SpriteAnimator.State.Completed))
+            {
+                return true;
+            }
+
+            /** Default rest to true */
             return true;
         }
 
@@ -440,6 +448,7 @@ namespace GameX.Entities
 
             // action animations
             bool isShooting = _attackInput.IsPressed || (_attackInput.IsReleased && !_chargeState.Equals(ChargeState.NONE));
+            bool isShootingWithWindow = isShooting || (!_attackInput.IsDown && _attackReleaseTime < ShootTimeWindow); // adding time window for shoot animations that linger/loop (i.e. run, etc.)
 
             if (animation.name == "idle" && isShooting)
             {
@@ -447,21 +456,21 @@ namespace GameX.Entities
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
             }
 
-            if(animation.name == "run" && isShooting)
+            if(animation.name == "run" && isShootingWithWindow)
             {
                 animation.name = "run_shoot";
                 animation.loopMode = SpriteAnimator.LoopMode.Loop;
                 animation.startFrame = _animator.CurrentFrame;
             }
 
-            if(animation.name == "jump" && isShooting)
+            if(animation.name == "jump" && isShootingWithWindow)
             {
                 animation.name = "jump_shoot";
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
                 animation.startFrame = _animator.CurrentFrame;
             }
 
-            if (animation.name == "fall" && isShooting)
+            if (animation.name == "fall" && isShootingWithWindow)
             {
                 animation.name = "fall_shoot";
                 animation.loopMode = SpriteAnimator.LoopMode.ClampForever;
@@ -517,7 +526,10 @@ namespace GameX.Entities
                 _chargeTime = 0;
                 _chargingShot = false;
 
-                EndBlinkTimer();
+                if (!_damageProtected && !_damageProtected)
+                {
+                    EndBlinkTimer();
+                }
             }
 
             if (_attackInput.IsPressed && _canFire)
@@ -529,7 +541,7 @@ namespace GameX.Entities
             if (!_attackInput.IsDown)
             {
                 _attackLockTime += Time.DeltaTime;
-                if (_attackReleaseTime < RunShootTimeWindow) _attackReleaseTime += Time.DeltaTime;                
+                if (_attackReleaseTime < ShootTimeWindow) _attackReleaseTime += Time.DeltaTime;                
             }
 
             if(_attackLockTime >= AttackInputLockTime)
@@ -603,13 +615,13 @@ namespace GameX.Entities
             switch (chargeState)
             {
                 case ChargeState.NONE:
-                    return new Vector2(1, 6);
+                    return new Vector2(2, 6);
                 case ChargeState.HALF:
-                    return new Vector2(1, 9);
+                    return new Vector2(2, 9);
                 case ChargeState.FULL:
-                    return new Vector2(1, 9);
+                    return new Vector2(2, 9);
                 default:
-                    return new Vector2(1, 9);
+                    return new Vector2(2, 9);
             }
         }
 
