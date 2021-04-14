@@ -39,6 +39,8 @@ namespace GameX.Entities
         public float Gravity = 1000f;
         public float TerminalVelocity = 400f;
         public float JumpHeight = 75f;
+        public float WallJumpTimeWindow = 0.1f;
+        public float WallJumpMultiplier = 1.5f; // multiplier to increase the distance a wall jump goes away from the wall
 
         // Weapons
         Dictionary<string, int> _projectileFpsData = new Dictionary<string, int>();
@@ -74,6 +76,7 @@ namespace GameX.Entities
         bool _jumping = false;
         bool _dashJumping = false;
         bool _wallSliding = false;
+        bool _wallJumping = false;
         bool _groundDashing = false;
         bool _airDashing = false;
         bool _canAirDash = true;
@@ -89,6 +92,7 @@ namespace GameX.Entities
         float _wallJumpDashTime = 0;
         float _attackLockTime = 0;
         float _attackReleaseTime = 0; // amount of time the shoot button has not been pressed
+        float _wallJumpTime = 0;
 
         // Input Axis
         VirtualIntegerAxis _xAxisInput;
@@ -680,6 +684,13 @@ namespace GameX.Entities
                     _groundDashTime = 0;
                 }
 
+                // end ground dash if we are free falling
+                if (!_collisionState.Left && !_collisionState.Right && !_collisionState.Below)
+                {
+                    _groundDashing = false;
+                    _groundDashTime = 0;
+                }
+
                 // end air dash with time expiration
                 if (!_collisionState.Below && _airDashTime >= MaxAirDashTime)
                 {
@@ -717,6 +728,12 @@ namespace GameX.Entities
                     {
                         _velocity.X = _facingRight ? MoveSpeed : -MoveSpeed;
                     }
+
+                    // if wall jumping invert the input to jump away from wall for a brief window
+                    if(_wallJumping && _wallJumpTime < WallJumpTimeWindow)
+                    {
+                        _velocity.X *= -1 * WallJumpMultiplier;
+                    }
                 }
 
                 // no x input
@@ -750,6 +767,17 @@ namespace GameX.Entities
                     {
                         _dashJumping = true;
                     }
+
+                    if(_wallSliding)
+                    {
+                        _wallJumping = true;
+                    }
+                }
+
+                // used for wall jump away from wall window
+                if(_wallJumping)
+                {
+                    _wallJumpTime += Time.DeltaTime;
                 }
 
                 // end jumping
@@ -761,6 +789,8 @@ namespace GameX.Entities
                         _velocity.Y = 0;
                     }
                     _jumping = false;
+                    _wallJumping = false;
+                    _wallJumpTime = 0;
                 }
 
                 // start wall sliding 
@@ -806,6 +836,8 @@ namespace GameX.Entities
             {
                 _velocity.Y = 0;
                 _jumping = false;
+                _wallJumping = false;
+                _wallJumpTime = 0;
             }
 
             if(_collisionState.BecameGroundedThisFrame)

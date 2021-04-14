@@ -28,7 +28,7 @@ namespace GameX.Entities
         private Dictionary<string, int> _fpsData;
         private Vector2 _colliderDimensions;
         private string _atlasPath;
-        private bool _hitTarget = false;
+        private bool _destroySelf;
         
         public Projectile(Scene scene,
             Vector2 spawnPosition,
@@ -60,14 +60,14 @@ namespace GameX.Entities
             _animator = SpriteUtil.CreateSpriteAnimatorFromAtlas(ref Scene, atlasPath, fpsData);
             this.AddComponent<SpriteAnimator>(_animator);
             _animator.RenderLayer = (int)RenderLayers.PROJECTILES;
-            if(Velocity.X < 0)
+            _animator.OnAnimationCompletedEvent += new Action<string>(HandleAnimationCompleted);
+            if (Velocity.X < 0)
             {
                 _animator.FlipX = true;
             }
             if(HasStartAnim)
             {
-                _animator.Play("start", SpriteAnimator.LoopMode.Once);
-                _animator.OnAnimationCompletedEvent += new Action<string>(HandleAnimationCompleted);
+                _animator.Play("start", SpriteAnimator.LoopMode.ClampForever);
             } else
             {
                 _animator.Play("live", LiveLoopMode);
@@ -93,7 +93,7 @@ namespace GameX.Entities
 
             _projectileMover.Move(Velocity * Time.DeltaTime);
 
-            if (!_hitTarget)
+            if (!_destroySelf)
             {
                 CheckForCollisions();
             }
@@ -115,19 +115,19 @@ namespace GameX.Entities
             }
         }
 
-        private void OnHitTarget(bool destroySelf)
+        private void OnHitTarget()
         {
-            _hitTarget = true;
-            if (destroySelf)
+            if(_destroySelf)
             {
-                this.Destroy();
-                return;
-            }
-            if (HasHitAnim)
-            {
-                Velocity = new Vector2(0, 0); // stop the projectile
-                _animator.Play("hit", SpriteAnimator.LoopMode.ClampForever);
-                _animator.OnAnimationCompletedEvent += new Action<string>(HandleAnimationCompleted);
+                Velocity = new Vector2(0, 0);
+
+                if (!HasHitAnim)
+                {
+                    this.Destroy();
+                } else
+                {
+                    _animator.Play("hit", SpriteAnimator.LoopMode.ClampForever);
+                }
             }
         }
 
@@ -139,17 +139,12 @@ namespace GameX.Entities
 
         private void DamageEnemy(Enemy enemy)
         {
-            if (!_hitTarget)
+            enemy.TakeDamage(Damage);
+            if (!ContinuesAfterKill || enemy.Health > 0)
             {
-                enemy.TakeDamage(Damage);
-                bool destroySelf = false;
-                if (!HasHitAnim && (!ContinuesAfterKill || enemy.Health > 0))
-                {
-                    destroySelf = true;
-                }
-                OnHitTarget(destroySelf);
+                _destroySelf = true;
             }
-            
+            OnHitTarget();
         }
 
     }
